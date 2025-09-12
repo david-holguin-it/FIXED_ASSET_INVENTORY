@@ -5,11 +5,7 @@
 } 
 
  
-
-<!-- Botón para abrir el modal -->
-<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#itemEditModal">
-    Edit Item
-</button>
+ 
 <!-- Edit ITEM Modal -->
 <div class="modal fade" id="itemEditModal" tabindex="-1" aria-labelledby="itemEditModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl">
@@ -114,6 +110,26 @@
                             <label class="form-label">NOTE</label>
                             <textarea class="form-control" name="NOTE"></textarea>
                         </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Acc Depreciation</label> 
+                            <input type="text" class="form-control" name="accumulatedDepreciation" />
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Category</label> 
+                            <input type="text" class="form-control" name="category" />
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Net Book Value</label> 
+                            <input type="text" class="form-control" name="netBookValue" />
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Useful Life</label>
+                            <input type="text" class="form-control" name="usefulLife"/>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Capitalization Date</label>
+                            <input type="date" class="form-control" name="capitalizationDate"/>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -135,15 +151,11 @@
             <input type="file" name="file" class="btn default" />
         </div>
         <div>
-            <button type="submit" class="btn success">Subir</button>
+            <button type="submit" class="btn btn-primary">Upload</button>
         </div>
     </form>
 </div>
-<div class="CRUD">Item CRUD
-    <button class="btn success">Add item</button>
-    <button class="btn default">Edit item</button>
-    <button class="btn danger">Remove item</button>
-</div>
+
 <table class="table" id="tblInv">
     <thead> 
         <tr>   
@@ -155,7 +167,7 @@
             <th>Quantity            </th>
             <th>Unit Price          </th>
             <th>Total Price         </th>
-            <th>Edit / Delete               </th>
+            <th>Edit / Delete       </th>
         </tr>
     </thead>
     <tbody> 
@@ -183,7 +195,7 @@
             },
             columns: [
                 { data: 'id'                },
-                { data: 'manufactureName'   },
+                { data: 'manufacturerName'  },
                 { data: 'materialNumber'    },
                 { data: 'productName'       },
                 { data: 'description'       },
@@ -264,19 +276,29 @@
                 serialNumber:$('input[name="serialNumber"]').val(),
                 location:$('input[name="location"]').val(),
                 PIC:$('input[name="PIC"]').val(),
-                NOTE:$('[name="NOTE"]').val()
+                NOTE:$('[name="NOTE"]').val(),
+
+                accumulatedDepreciation:$('input[name="accumulatedDepreciation"]').val(),
+                category:$('input[name="category"]').val(),
+                netBookValue:$('input[name="netBookValue"]').val(),
+                usefulLife:$('input[name="usefulLife"]').val(),
+                capitalizationDate:$('[name="capitalizationDate"]').val()
             },
-            function(resp){
-              
+            function(resp){ 
+                alert("Changes were saved");
         });
     });
     
     $(document).on("click",".btnEdit",function(e){ 
-        var id=$(this).attr("id").split("_")[1]; 
+        clearModal();
+        $("#saveItemBtn").attr("disabled",true);
+
+        var id = $(this).attr("id").split("_")[1]; 
         $.get('/FAI/GetItem',
             {id:id},
             function(resp){
-                clearModal();
+                $("#saveItemBtn").attr("disabled",false);
+
                 $('input[name="id"]').val(resp.data[0]["id"]);
                 $('input[name="manufacturerName"]').val(resp.data[0]["manufacturerName"]);
                 $('input[name="partyManufacturerName"]').val(resp.data[0]["partyManufacturerName"]);
@@ -304,17 +326,26 @@
                 $('input[name="location"]').val(resp.data[0]["location"]);
                 $('input[name="PIC"]').val(resp.data[0]["pic"]);
                 $('[name="NOTE"]').val(resp.data[0]["note"]);
-                console.log(resp.data);
+
+
+                $('input[name="accumulatedDepreciation"]').val(resp.data[0]["accumulatedDepreciation"]);
+                $('input[name="category"]').val(resp.data[0]["category"]);
+                $('input[name="netBookValue"]').val(resp.data[0]["netBookValue"]);
+                $('input[name="usefulLife"]').val(resp.data[0]["usefulLife"]);
+                $('[name="capitalizationDate"]').val(resp.data[0]["capitalizationDate"]);
+                console.log(resp.data); 
         });
     });
     
     $(document).on("click",".btnDelete",function(e){
-        var c=confirm("Are you sure you want to delete this item?");
-        var id=$(this).attr("id").split("_")[1];
+        var c = confirm("Are you sure you want to delete this item?");
+        if(!c) return;
+        var id = $(this).attr("id").split("_")[1];
         $.get('/FAI/DeleteItem',
             {id:id},
             function(resp){
                 tbl.ajax.reload();
+                alert("Item was Removed");
             }
         );
     });

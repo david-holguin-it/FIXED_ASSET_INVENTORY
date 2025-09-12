@@ -1,16 +1,32 @@
 ﻿using DocumentFormat.OpenXml.Bibliography;
+using DocumentFormat.OpenXml.Drawing.Diagrams;
 using DocumentFormat.OpenXml.ExtendedProperties;
 using DocumentFormat.OpenXml.Office.Word;
 using DocumentFormat.OpenXml.Office2010.Excel;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using DocumentFormat.OpenXml.Spreadsheet;
+using DocumentFormat.OpenXml.Wordprocessing;
 using FIXED_ASSET_INVENTORY.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
+using Microsoft.Win32;
 using System.Diagnostics.Contracts;
 using System.Net;
+using System.Reflection.PortableExecutable;
 
 namespace FIXED_ASSET_INVENTORY.Controllers
 {
+
+    /// <summary>
+    /// Los fixed assets se son bienes que se usan para producir bienes y servicios, y no se destinan para venta 
+    /// TODOS 
+    ///     Calcular depreciacion mensualmente antes del cierre del mes
+    ///     Cargar campos faltantes del formato
+    ///     Agregar  campos faltantes a
+    ///     Cambiar  locacion y llevar el registro de quien lo registro, cuando y a donde 
+    /// TODOS 
+    /// Capitalization Day es la fecha en que un activo fijo se registra en los libros contables de la empresa, esto es a partir de que ya se puede usar y  a partir de esta fecha se empieza a depreciar el activo
+    /// </summary>
     public class FAIController : Controller
     { 
         private readonly string _connStr;
@@ -18,16 +34,11 @@ namespace FIXED_ASSET_INVENTORY.Controllers
         {
             _connStr=configuration.GetConnectionString("PSGDbConnStr");
         }
+
         public IActionResult Index()
         {
             return View();
-        }
-
-        [HttpGet]
-        public IActionResult Upload()
-        {
-            return View();
-        }
+        } 
 
         [HttpPost]
         public async Task<IActionResult> Upload(IFormFile file)
@@ -53,7 +64,7 @@ namespace FIXED_ASSET_INVENTORY.Controllers
                                         .Skip(2);
                 SqlConnection c = new SqlConnection(_connStr);
                 c.Open();
-                   int cnt = 0;
+                int cnt = 0;
                 List<string> lstErrors = new List<string>();
                 using (SqlTransaction tran = c.BeginTransaction())
                 {
@@ -62,9 +73,12 @@ namespace FIXED_ASSET_INVENTORY.Controllers
                      //   if (cnt >= 10) break;
                         if (row.IsEmpty()) continue;
                         string insertQuery = "INSERT INTO [FIXED_ASSET_INVENTORY].[dbo].[FIXED_ASSETS_INV] " 
-                           + "(         manufacturerName, partyManufacturerName, materialNumber, productName, description, quantity,  unitPrice,  totalPrice,  unitPriceUSD,  totalUSD,  paymentTerms,  purchaseOrderNo,  contractNo,  signOff,  remark,  materialsSent,  department,  manager,  fixedAssetNumber,  serialNumber,  location,  PIC,  NOTE )"
-                           + " VALUES (@manufacturerName,@partyManufacturerName,@materialNumber,@productName,@description,@quantity, @unitPrice, @totalPrice, @unitPriceUSD, @totalUSD, @paymentTerms, @purchaseOrderNo, @contractNo, @signOff, @remark, @materialsSent, @department, @manager, @fixedAssetNumber, @serialNumber, @location, @PIC, @NOTE )";
+                           + "        ( manufacturerName,  partyManufacturerName,  materialNumber,  productName,  description,  quantity,  unitPrice,  totalPrice,  unitPriceUSD,  totalUSD,  paymentTerms,  purchaseOrderNo,  contractNo,  signOff,  remark,  materialsSent,  department,  manager,  fixedAssetNumber,  serialNumber,  location,  PIC,  NOTE )"
+                           + " VALUES (@manufacturerName, @partyManufacturerName, @materialNumber, @productName, @description, @quantity, @unitPrice, @totalPrice, @unitPriceUSD, @totalUSD, @paymentTerms, @purchaseOrderNo, @contractNo, @signOff, @remark, @materialsSent, @department, @manager, @fixedAssetNumber, @serialNumber, @location, @PIC, @NOTE )";
 
+                    /* 
+                        category, netBookValue, usefulLife, capitalizationDate, accumulatedDepreciation
+                    */
                         SqlCommand cmd = new SqlCommand(insertQuery, c, tran);
                         try
                         {
@@ -99,6 +113,14 @@ namespace FIXED_ASSET_INVENTORY.Controllers
                             var cellValue23 = row.Cell(23).GetValue<string>(); // PIC
                             var cellValue24 = row.Cell(24).GetValue<string>(); // NOTE
 
+                        /*
+                            var cellValue25 = row.Cell(25).GetValue<string>(); // category
+                            var cellValue26 = row.Cell(26).GetValue<string>(); // netBookValue
+                            var cellValue27 = row.Cell(27).GetValue<string>(); // usefulLife
+                            var cellValue28 = row.Cell(28).GetValue<string>(); // capitalizationDate
+                            var cellValue29 = row.Cell(29).GetValue<string>(); // accumulatedDepreciation
+                        */
+
                             cmd.Parameters.AddWithValue("@manufacturerName", cellValue2);
                             cmd.Parameters.AddWithValue("@partyManufacturerName", cellValue3);
                             cmd.Parameters.AddWithValue("@materialNumber", cellValue4);
@@ -126,6 +148,13 @@ namespace FIXED_ASSET_INVENTORY.Controllers
                             cmd.Parameters.AddWithValue("@location", cellValue22);
                             cmd.Parameters.AddWithValue("@PIC", cellValue23);
                             cmd.Parameters.AddWithValue("@NOTE", cellValue24);
+                        /*
+                           cmd.Parameters.AddWithValue("@category", cellValue25);
+                           cmd.Parameters.AddWithValue("@netBookValue", cellValue26);
+                           cmd.Parameters.AddWithValue("@usefulLife", cellValue27);
+                           cmd.Parameters.AddWithValue("@capitalizationDate", cellValue28);
+                           cmd.Parameters.AddWithValue("@accumulatedDepreciation", cellValue29);
+                       */
                             cmd.ExecuteNonQuery();
                         }
                         catch (Exception ex)
@@ -159,14 +188,14 @@ namespace FIXED_ASSET_INVENTORY.Controllers
             {
                 var d = new
                 {  
-                    id=  reader.IsDBNull(0) ? 0.ToString() : reader["id"].ToString(), 
-                    manufactureName =  reader.IsDBNull(1) ? "" : reader["manufacturerName"].ToString(),
-                    materialNumber = reader.IsDBNull(2) ? "" : reader["materialNumber"].ToString(),
-                    productName = reader.IsDBNull(3) ? "" : reader["productName"].ToString(),
-                    description = reader.IsDBNull(4) ? "" : reader["description"].ToString(),
-                    quantity = reader.IsDBNull(5) ? "" : reader["quantity"].ToString(),
-                    unitPrice = reader.IsDBNull(6) ? "" : reader["unitPrice"].ToString(),
-                    totalPrice = reader.IsDBNull(7) ? "" : reader["totalPrice"].ToString()
+                    id = reader.IsDBNull(0)                 ? "0": reader["id"].ToString(),
+                    manufacturerName =  reader.IsDBNull(1)   ? "" : reader["manufacturerName"].ToString(),
+                    materialNumber = reader.IsDBNull(2)     ? "" : reader["materialNumber"].ToString(),
+                    productName = reader.IsDBNull(3)        ? "" : reader["productName"].ToString(),
+                    description = reader.IsDBNull(4)        ? "" : reader["description"].ToString(),
+                    quantity = reader.IsDBNull(5)           ? "" : reader["quantity"].ToString(),
+                    unitPrice = reader.IsDBNull(6)          ? "" : reader["unitPrice"].ToString(),
+                    totalPrice = reader.IsDBNull(7)         ? "" : reader["totalPrice"].ToString()
                 };
                 dr.Add(d);
             }
@@ -175,7 +204,6 @@ namespace FIXED_ASSET_INVENTORY.Controllers
                 data = dr
             });
         }
-        
           
         [HttpPost]
         public JsonResult CreateItem([FromBody] string s)
@@ -244,34 +272,38 @@ namespace FIXED_ASSET_INVENTORY.Controllers
             c.Open();
             using (SqlTransaction tran = c.BeginTransaction())
             {  
-                    string insertQuery = "UPDATE [FIXED_ASSET_INVENTORY].[dbo].[FIXED_ASSETS_INV] "
-                       +" SET manufacturerName=@manufacturerName," +
-                       "partyManufacturerName=@partyManufacturerName," +
-                       "materialNumber=@materialNumber," +
-                       "productName=@productName," +
-                       "description=@description," +
-                       "quantity=@quantity, " +
-                       "unitPrice=@unitPrice, " +
-                       "totalPrice=@totalPrice, " +
-                       "unitPriceUSD=@unitPriceUSD, " +
-                       "totalUSD=@totalUSD, " +
-                       "paymentTerms=@paymentTerms, " +
-                       "purchaseOrderNo=@purchaseOrderNo, " +
-                       "contractNo=@contractNo, " +
-                       "signOff=@signOff, " +
-                       "remark=@remark, " +
-                       "materialsSent=@materialsSent, " +
-                       "department=@department, " +
-                       "manager=@manager, " +
-                       "fixedAssetNumber=@fixedAssetNumber, " +
-                       "serialNumber=@serialNumber, " +
-                       "location=@location, " +
-                       "PIC=@PIC, " +
-                       "NOTE=@NOTE " +
-                       "WHERE Id=@id";
+                    string insertQuery = "UPDATE [FIXED_ASSET_INVENTORY].[dbo].[FIXED_ASSETS_INV] " +
+                    "   SET manufacturerName=@manufacturerName," +
+                    "partyManufacturerName=@partyManufacturerName," +
+                    "materialNumber=@materialNumber," +
+                    "productName=@productName," +
+                    "description=@description," +
+                    "quantity=@quantity, " +
+                    "unitPrice=@unitPrice, " +
+                    "totalPrice=@totalPrice, " +
+                    "unitPriceUSD=@unitPriceUSD, " +
+                    "totalUSD=@totalUSD, " +
+                    "paymentTerms=@paymentTerms, " +
+                    "purchaseOrderNo=@purchaseOrderNo, " +
+                    "contractNo=@contractNo, " +
+                    "signOff=@signOff, " +
+                    "remark=@remark, " +
+                    "materialsSent=@materialsSent, " +
+                    "department=@department, " +
+                    "manager=@manager, " +
+                    "fixedAssetNumber=@fixedAssetNumber, " +
+                    "serialNumber=@serialNumber, " +
+                    "location=@location, " +
+                    "PIC=@PIC, " +
+                    "NOTE=@NOTE, " +
+                    "accumulatedDepreciation=@accumulatedDepreciation, " +
+                    "category=@category, " +
+                    "netBookValue=@netBookValue, " +
+                    "usefulLife=@usefulLife, " +
+                    "capitalizationDate=@capitalizationDate " +
+                    "WHERE Id=@id";
 
-
-                    SqlCommand cmd = new SqlCommand(insertQuery, c, tran); 
+                SqlCommand cmd = new SqlCommand(insertQuery, c, tran); 
                     cmd.Parameters.AddWithValue("@id", item.id);
 
                     cmd.Parameters.AddWithValue("@manufacturerName", string.IsNullOrEmpty(item.manufacturerName) ?"":item.manufacturerName);
@@ -301,8 +333,15 @@ namespace FIXED_ASSET_INVENTORY.Controllers
                     cmd.Parameters.AddWithValue("@location", string.IsNullOrEmpty(item.location) ? "" : item.location);
                     cmd.Parameters.AddWithValue("@PIC", string.IsNullOrEmpty(item.PIC) ? "" : item.PIC);
                     cmd.Parameters.AddWithValue("@NOTE", string.IsNullOrEmpty(item.NOTE) ? "" : item.NOTE);
+
+                    cmd.Parameters.AddWithValue("@accumulatedDepreciation",  item.accumulatedDepreciation);
+                    cmd.Parameters.AddWithValue("@category", string.IsNullOrEmpty(item.category) ? "" : item.category);
+                    cmd.Parameters.AddWithValue("@netBookValue",   item.netBookValue);
+                    cmd.Parameters.AddWithValue("@usefulLife",     item.usefulLife);
+                    cmd.Parameters.AddWithValue("@capitalizationDate",  item.capitalizationDate); 
+
                     cmd.ExecuteNonQuery(); 
-                tran.Commit();
+                    tran.Commit();
             }
             return Json(new { msg = "Item was modified" });
         }
@@ -329,21 +368,26 @@ namespace FIXED_ASSET_INVENTORY.Controllers
                     quantity = reader.IsDBNull(5) ? "" : reader["quantity"].ToString(),
                     unitPrice = reader.IsDBNull(6) ? "" : reader["unitPrice"].ToString(),
                     totalPrice = reader.IsDBNull(7) ? "" : reader["totalPrice"].ToString(),
-                    unitPriceUSD = reader.IsDBNull(7) ? "" : reader["unitPriceUSD"].ToString(),
-                    totalUSD = reader.IsDBNull(7) ? "" : reader["totalUSD"].ToString(),
-                    paymentTerms = reader.IsDBNull(7) ? "" : reader["paymentTerms"].ToString(),
-                    purchaseOrderNo = reader.IsDBNull(7) ? "" : reader["purchaseOrderNo"].ToString(),
-                    contractNo = reader.IsDBNull(7) ? "" : reader["contractNo"].ToString(),
-                    signOff = reader.IsDBNull(7) ? "" : reader["signOff"].ToString(),
-                    remark = reader.IsDBNull(7) ? "" : reader["remark"].ToString(),
-                    materialsSent = reader.IsDBNull(7) ? "" : reader["materialsSent"].ToString(),
-                    department = reader.IsDBNull(7) ? "" : reader["department"].ToString(),
-                    manager = reader.IsDBNull(7) ? "" : reader["manager"].ToString(),
-                    fixedAssetNumber = reader.IsDBNull(7) ? "" : reader["fixedAssetNumber"].ToString(),
-                    serialNumber = reader.IsDBNull(7) ? "" : reader["serialNumber"].ToString(),
-                    location = reader.IsDBNull(7) ? "" : reader["location"].ToString(),
-                    PIC = reader.IsDBNull(7) ? "" : reader["PIC"].ToString(),
-                    NOTE = reader.IsDBNull(7) ? "" : reader["NOTE"].ToString()  
+                    unitPriceUSD = reader.IsDBNull(8) ? "" : reader["unitPriceUSD"].ToString(),
+                    totalUSD = reader.IsDBNull(9) ? "" : reader["totalUSD"].ToString(),
+                    paymentTerms = reader.IsDBNull(10) ? "" : reader["paymentTerms"].ToString(),
+                    purchaseOrderNo = reader.IsDBNull(11) ? "" : reader["purchaseOrderNo"].ToString(),
+                    contractNo = reader.IsDBNull(12) ? "" : reader["contractNo"].ToString(),
+                    signOff = reader.IsDBNull(13) ? "" : reader["signOff"].ToString(),
+                    remark = reader.IsDBNull(14) ? "" : reader["remark"].ToString(),
+                    materialsSent = reader.IsDBNull(15) ? "" : reader["materialsSent"].ToString(),
+                    department = reader.IsDBNull(16) ? "" : reader["department"].ToString(),
+                    manager = reader.IsDBNull(17) ? "" : reader["manager"].ToString(),
+                    fixedAssetNumber = reader.IsDBNull(18) ? "" : reader["fixedAssetNumber"].ToString(),
+                    serialNumber = reader.IsDBNull(19) ? "" : reader["serialNumber"].ToString(),
+                    location = reader.IsDBNull(20) ? "" : reader["location"].ToString(),
+                    PIC = reader.IsDBNull(21) ? "" : reader["PIC"].ToString(),
+                    NOTE = reader.IsDBNull(22) ? "" : reader["NOTE"].ToString(),
+                    accumulatedDepreciation = reader.IsDBNull(23) ? "" : reader["accumulatedDepreciation"].ToString(),
+                    category = reader.IsDBNull(24) ? "" : reader["category"].ToString(),
+                    netBookValue = reader.IsDBNull(25) ? "" : reader["netBookValue"].ToString(),
+                    usefulLife = reader.IsDBNull(26) ? "" : reader["usefulLife"].ToString(),
+                    capitalizationDate = reader.IsDBNull(27) ? "" : reader["capitalizationDate"].ToString()
                 };
                 dr.Add(d);
             }

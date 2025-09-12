@@ -26,6 +26,11 @@
         public string location { get; set; }
         public string PIC { get; set; }
         public string NOTE { get; set; }
+        public float accumulatedDepreciation { get; set; }
+        public string category { get; set; }
+        public float netBookValue { get; set; }
+        public int usefulLife { get; set; }
+        public DateTime capitalizationDate { get; set; } 
 
     };
 
