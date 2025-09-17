@@ -1,4 +1,5 @@
 ﻿using DocumentFormat.OpenXml.Bibliography;
+using DocumentFormat.OpenXml.Drawing;
 using DocumentFormat.OpenXml.Drawing.Diagrams;
 using DocumentFormat.OpenXml.ExtendedProperties;
 using DocumentFormat.OpenXml.Office.Word;
@@ -7,12 +8,14 @@ using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using DocumentFormat.OpenXml.Spreadsheet;
 using DocumentFormat.OpenXml.Wordprocessing;
 using FIXED_ASSET_INVENTORY.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.Win32;
 using System.Diagnostics.Contracts;
 using System.Net;
 using System.Reflection.PortableExecutable;
+using System.Text.Json;
 
 namespace FIXED_ASSET_INVENTORY.Controllers
 {
@@ -21,12 +24,13 @@ namespace FIXED_ASSET_INVENTORY.Controllers
     /// Los fixed assets se son bienes que se usan para producir bienes y servicios, y no se destinan para venta 
     /// TODOS 
     ///     Calcular depreciacion mensualmente antes del cierre del mes
-    ///     Cargar campos faltantes del formato
-    ///     Agregar  campos faltantes a
-    ///     Cambiar  locacion y llevar el registro de quien lo registro, cuando y a donde 
+    ///     -Cargar campos faltantes del formato
+    ///     -Agregar  campos faltantes a
+    ///     -Cambiar  locacion y llevar el registro de quien lo registro, cuando y a donde 
     /// TODOS 
     /// Capitalization Day es la fecha en que un activo fijo se registra en los libros contables de la empresa, esto es a partir de que ya se puede usar y  a partir de esta fecha se empieza a depreciar el activo
     /// </summary>
+    [Authorize]
     public class FAIController : Controller
     { 
         private readonly string _connStr;
@@ -266,6 +270,7 @@ namespace FIXED_ASSET_INVENTORY.Controllers
         [HttpPost]
         public JsonResult EditItem(FixedAssetItem item)
         {
+            string identity = "";
             if( item.id == 0)
                 return Json(new { msg = "Item ID is required" });
             SqlConnection c = new SqlConnection("Server=10.95.2.52; Database=FIXED_ASSET_INVENTORY;User Id=IMPIT;Password=PSG+123.;TrustServerCertificate=True");
@@ -273,11 +278,11 @@ namespace FIXED_ASSET_INVENTORY.Controllers
             using (SqlTransaction tran = c.BeginTransaction())
             {  
                     string insertQuery = "UPDATE [FIXED_ASSET_INVENTORY].[dbo].[FIXED_ASSETS_INV] " +
-                    "   SET manufacturerName=@manufacturerName," +
-                    "partyManufacturerName=@partyManufacturerName," +
-                    "materialNumber=@materialNumber," +
-                    "productName=@productName," +
-                    "description=@description," +
+                    "   SET manufacturerName=@manufacturerName, " +
+                    "partyManufacturerName=@partyManufacturerName, " +
+                    "materialNumber=@materialNumber, " +
+                    "productName=@productName, " +
+                    "description=@description, " +
                     "quantity=@quantity, " +
                     "unitPrice=@unitPrice, " +
                     "totalPrice=@totalPrice, " +
@@ -303,8 +308,8 @@ namespace FIXED_ASSET_INVENTORY.Controllers
                     "capitalizationDate=@capitalizationDate " +
                     "WHERE Id=@id";
 
-                SqlCommand cmd = new SqlCommand(insertQuery, c, tran); 
-                    cmd.Parameters.AddWithValue("@id", item.id);
+                SqlCommand cmd = new SqlCommand(insertQuery, c, tran);
+                cmd.Parameters.AddWithValue("@id", item.id);
 
                     cmd.Parameters.AddWithValue("@manufacturerName", string.IsNullOrEmpty(item.manufacturerName) ?"":item.manufacturerName);
                     cmd.Parameters.AddWithValue("@partyManufacturerName", string.IsNullOrEmpty(item.partyManufacturerName) ? "" : item.partyManufacturerName);
@@ -330,6 +335,15 @@ namespace FIXED_ASSET_INVENTORY.Controllers
 
                     cmd.Parameters.AddWithValue("@fixedAssetNumber", string.IsNullOrEmpty(item.fixedAssetNumber) ? "" : item.fixedAssetNumber);
                     cmd.Parameters.AddWithValue("@serialNumber", string.IsNullOrEmpty(item.serialNumber) ? "" : item.serialNumber);
+
+                // IF NEW LOCATION IS DIFFERENT THAN OLD LOCATION, SAVE REGISTER
+                    string insertLog = string.Format("INSERT INTO LocationChangeLog (location, idAsset, updatedBy, dateOfChange, description)"
+                    +"SELECT '{0}',{1}, '{2}', getdate(), ''"
+                    +"WHERE (SELECT COUNT(*) cnt FROM [FIXED_ASSET_INVENTORY].[dbo].[FIXED_ASSETS_INV]"
+                    +"WHERE id = {1} and location<> '{0}') > 0", item.location, item.id, identity);
+                    SqlCommand cmd2 = new SqlCommand(insertLog, c, tran);
+                    cmd2.ExecuteNonQuery();
+                    
                     cmd.Parameters.AddWithValue("@location", string.IsNullOrEmpty(item.location) ? "" : item.location);
                     cmd.Parameters.AddWithValue("@PIC", string.IsNullOrEmpty(item.PIC) ? "" : item.PIC);
                     cmd.Parameters.AddWithValue("@NOTE", string.IsNullOrEmpty(item.NOTE) ? "" : item.NOTE);
@@ -347,54 +361,53 @@ namespace FIXED_ASSET_INVENTORY.Controllers
         }
 
         [HttpGet]
-        public JsonResult GetItem(int id)
-        {
-            var dr = new List<Object>();
+        public IActionResult GetItem(int id)
+        { 
             SqlConnection c = new SqlConnection("Server=10.95.2.52; Database=FIXED_ASSET_INVENTORY;User Id=IMPIT;Password=PSG+123.;TrustServerCertificate=True");
             c.Open();
             SqlCommand cmd = new SqlCommand("SELECT * FROM [FIXED_ASSET_INVENTORY].[dbo].[FIXED_ASSETS_INV] WHERE id=@id", c);
             cmd.Parameters.AddWithValue("@id",id);
             SqlDataReader reader = cmd.ExecuteReader();
+
+            var d = new FixedAssetItem();
             while (reader.Read())
             {
-                var d = new
+                d = new FixedAssetItem
                 {
-                    id = reader.IsDBNull(0) ? 0.ToString() : reader["Id"].ToString(),
+                    id = reader.IsDBNull(0) ? 0 : Convert.ToInt32( reader["Id"]) ,
                     manufacturerName = reader.IsDBNull(1) ? "" : reader["manufacturerName"].ToString(),
-                    partyManufacturerName = reader.IsDBNull(1) ? "" : reader["partyManufacturerName"].ToString(),
-                    materialNumber = reader.IsDBNull(2) ? "" : reader["materialNumber"].ToString(),
-                    productName = reader.IsDBNull(3) ? "" : reader["productName"].ToString(),
-                    description = reader.IsDBNull(4) ? "" : reader["description"].ToString(),
-                    quantity = reader.IsDBNull(5) ? "" : reader["quantity"].ToString(),
-                    unitPrice = reader.IsDBNull(6) ? "" : reader["unitPrice"].ToString(),
-                    totalPrice = reader.IsDBNull(7) ? "" : reader["totalPrice"].ToString(),
-                    unitPriceUSD = reader.IsDBNull(8) ? "" : reader["unitPriceUSD"].ToString(),
-                    totalUSD = reader.IsDBNull(9) ? "" : reader["totalUSD"].ToString(),
-                    paymentTerms = reader.IsDBNull(10) ? "" : reader["paymentTerms"].ToString(),
-                    purchaseOrderNo = reader.IsDBNull(11) ? "" : reader["purchaseOrderNo"].ToString(),
-                    contractNo = reader.IsDBNull(12) ? "" : reader["contractNo"].ToString(),
-                    signOff = reader.IsDBNull(13) ? "" : reader["signOff"].ToString(),
-                    remark = reader.IsDBNull(14) ? "" : reader["remark"].ToString(),
-                    materialsSent = reader.IsDBNull(15) ? "" : reader["materialsSent"].ToString(),
-                    department = reader.IsDBNull(16) ? "" : reader["department"].ToString(),
-                    manager = reader.IsDBNull(17) ? "" : reader["manager"].ToString(),
-                    fixedAssetNumber = reader.IsDBNull(18) ? "" : reader["fixedAssetNumber"].ToString(),
-                    serialNumber = reader.IsDBNull(19) ? "" : reader["serialNumber"].ToString(),
-                    location = reader.IsDBNull(20) ? "" : reader["location"].ToString(),
-                    PIC = reader.IsDBNull(21) ? "" : reader["PIC"].ToString(),
-                    NOTE = reader.IsDBNull(22) ? "" : reader["NOTE"].ToString(),
-                    accumulatedDepreciation = reader.IsDBNull(23) ? "" : reader["accumulatedDepreciation"].ToString(),
-                    category = reader.IsDBNull(24) ? "" : reader["category"].ToString(),
-                    netBookValue = reader.IsDBNull(25) ? "" : reader["netBookValue"].ToString(),
-                    usefulLife = reader.IsDBNull(26) ? "" : reader["usefulLife"].ToString(),
-                    capitalizationDate = reader.IsDBNull(27) ? "" : reader["capitalizationDate"].ToString()
-                };
-                dr.Add(d);
-            }
-            return Json(new
-            {
-                data = dr
-            });
+                    partyManufacturerName = reader.IsDBNull(2) ? "" : reader["partyManufacturerName"].ToString(),
+                    materialNumber = reader.IsDBNull(3) ? "" : reader["materialNumber"].ToString(),
+                    productName = reader.IsDBNull(4) ? "" : reader["productName"].ToString(),
+                    description = reader.IsDBNull(5) ? "" : reader["description"].ToString(),
+                    quantity = reader.IsDBNull(6) ? 0 : Convert.ToInt32(reader["quantity"]),
+                    unitPrice = reader.IsDBNull(7) ? 0 : (float)Convert.ToDouble(reader["unitPrice"]),
+                    totalPrice = reader.IsDBNull(8) ? 0 : (float)Convert.ToDecimal(reader["totalPrice"]),
+                    unitPriceUSD = reader.IsDBNull(9) ? 0 : (float)Convert.ToDouble(reader["unitPriceUSD"]),
+                    totalUSD = reader.IsDBNull(10) ? 0 : (float)Convert.ToDecimal(reader["totalUSD"]),
+                    paymentTerms = reader.IsDBNull(11) ? "" : reader["paymentTerms"].ToString(),
+                    purchaseOrderNo = reader.IsDBNull(12) ? "" : reader["purchaseOrderNo"].ToString(),
+                    contractNo = reader.IsDBNull(13) ? "" : reader["contractNo"].ToString(),
+                    signOff = reader.IsDBNull(14) ? "" : reader["signOff"].ToString(),
+                    remark = reader.IsDBNull(15) ? "" : reader["remark"].ToString(),
+                    materialsSent = reader.IsDBNull(16) ? "" : reader["materialsSent"].ToString(),
+                    department = reader.IsDBNull(17) ? "" : reader["department"].ToString(),
+                    manager = reader.IsDBNull(18) ? "" : reader["manager"].ToString(),
+                    fixedAssetNumber = reader.IsDBNull(19) ? "" : reader["fixedAssetNumber"].ToString(),
+                    serialNumber = reader.IsDBNull(20) ? "" : reader["serialNumber"].ToString(),
+                    location = reader.IsDBNull(21) ? "" : reader["location"].ToString(),
+                    PIC = reader.IsDBNull(22) ? "" : reader["PIC"].ToString(),
+                    NOTE = reader.IsDBNull(23) ? "" : reader["NOTE"].ToString(),
+                    accumulatedDepreciation = reader.IsDBNull(24) ? 0 : (float) Convert.ToDecimal(reader["accumulatedDepreciation"].ToString()),
+                    category = reader.IsDBNull(25) ? "NONE" : reader["category"].ToString(),
+                    netBookValue = reader.IsDBNull(26) ? 0: (float)Convert.ToDecimal(reader["netBookValue"].ToString()),
+                    usefulLife = reader.IsDBNull(27) ? 0 : Convert.ToInt32(reader["usefulLife"].ToString()),
+                    capitalizationDate = reader.IsDBNull(28) ? new DateTime() :DateTime.Parse( reader["capitalizationDate"].ToString())
+                }; 
+            } 
+
+            var json = JsonSerializer.Serialize(new { data = d });
+            return Content(json, "application/json");
         }
 
         [HttpGet]

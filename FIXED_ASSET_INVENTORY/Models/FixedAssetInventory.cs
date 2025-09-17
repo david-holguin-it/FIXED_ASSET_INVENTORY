@@ -32,6 +32,8 @@
         public int usefulLife { get; set; }
         public DateTime capitalizationDate { get; set; } 
 
+        public string updatedBY { get; set; }
+
     };
 
 }

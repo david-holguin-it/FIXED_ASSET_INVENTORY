@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace FIXED_ASSET_INVENTORY.Controllers
 {
+    [Authorize]
     public class ReportController : Controller
     {
         private readonly string _connStr;

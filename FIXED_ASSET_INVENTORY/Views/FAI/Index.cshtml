@@ -11,30 +11,39 @@
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="itemEditModalLabel">Edit</h5>
+                <h5 class="modal-title" id="itemEditModalLabel">Edit Register <label id="editId"></label></h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
             <div class="modal-body">
+                <div id="loader" class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content bg-transparent border-0 shadow-none">
+                        <div class="modal-body d-flex justify-content-center align-items-center" style="height:200px;">
+                            <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                                <span class="visually-hidden">Cargando...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <form id="itemEditForm">
                     <div class="row g-3">
                         <input type="hidden" name="id" value="">
-                        <div class="col-md-6">
+                        <div class="col-md-3">
                             <label class="form-label">Manufacturer Name</label>
                             <input type="text" class="form-control" name="manufacturerName" required>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-3">
                             <label class="form-label">Party Manufacturer Name</label>
                             <input type="text" class="form-control" name="partyManufacturerName">
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label class="form-label">Material Number</label>
                             <input type="text" class="form-control" name="materialNumber" required>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label class="form-label">Product Name</label>
                             <input type="text" class="form-control" name="productName">
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label class="form-label">Description</label>
                             <input type="text" class="form-control" name="description">
                         </div>
@@ -106,34 +115,34 @@
                             <label class="form-label">PIC</label>
                             <input type="text" class="form-control" name="PIC">
                         </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Acc Depreciation</label> 
+                            <input type="text" class="form-control" name="accumulatedDepreciation" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Category</label> 
+                            <input type="text" class="form-control" name="category" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Net Book Value</label> 
+                            <input type="text" class="form-control" name="netBookValue" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Useful Life</label>
+                            <input type="text" class="form-control" name="usefulLife"/>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Capitalization Date</label>
+                            <input type="date" class="form-control" name="capitalizationDate"/>
+                        </div>
                         <div class="col-md-12">
                             <label class="form-label">NOTE</label>
                             <textarea class="form-control" name="NOTE"></textarea>
                         </div>
-                        <div class="col-md-12">
-                            <label class="form-label">Acc Depreciation</label> 
-                            <input type="text" class="form-control" name="accumulatedDepreciation" />
-                        </div>
-                        <div class="col-md-12">
-                            <label class="form-label">Category</label> 
-                            <input type="text" class="form-control" name="category" />
-                        </div>
-                        <div class="col-md-12">
-                            <label class="form-label">Net Book Value</label> 
-                            <input type="text" class="form-control" name="netBookValue" />
-                        </div>
-                        <div class="col-md-12">
-                            <label class="form-label">Useful Life</label>
-                            <input type="text" class="form-control" name="usefulLife"/>
-                        </div>
-                        <div class="col-md-12">
-                            <label class="form-label">Capitalization Date</label>
-                            <input type="date" class="form-control" name="capitalizationDate"/>
-                        </div>
                     </div>
                 </form>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer">  
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
                 <button type="button" class="btn btn-primary" id="saveItemBtn">Guardar</button>
             </div>
@@ -184,6 +193,8 @@
 
 <script type="text/javascript">    
     var tbl=null;
+    const loading = document.getElementById('loading');
+
     function getData(){
         var data=[]; 
         tbl=$('#tblInv').DataTable(
@@ -290,49 +301,61 @@
     });
     
     $(document).on("click",".btnEdit",function(e){ 
-        clearModal();
+        clearModal(); 
+        $("#loader").show();
+        $("#itemEditForm").hide();
         $("#saveItemBtn").attr("disabled",true);
 
         var id = $(this).attr("id").split("_")[1]; 
+        $("#editId").html("["+id+"]");
         $.get('/FAI/GetItem',
             {id:id},
             function(resp){
+            $("#itemEditForm").show(); 
+            $("#loader").hide();
                 $("#saveItemBtn").attr("disabled",false);
 
-                $('input[name="id"]').val(resp.data[0]["id"]);
-                $('input[name="manufacturerName"]').val(resp.data[0]["manufacturerName"]);
-                $('input[name="partyManufacturerName"]').val(resp.data[0]["partyManufacturerName"]);
-                $('input[name="materialNumber"]').val(resp.data[0]["materialNumber"]);
-                $('input[name="productName"]').val(resp.data[0]["productName"]);
-                $('input[name="description"]').val(resp.data[0]["description"]);
-                $('input[name="quantity"]').val(resp.data[0]["quantity"]);
-                $('input[name="unitPrice"]').val(resp.data[0]["unitPrice"]);
-                $('input[name="totalPrice"]').val(resp.data[0]["totalPrice"]);
+                $('input[name="id"]').val(resp.data["id"]);
+                $('input[name="manufacturerName"]').val(resp.data["manufacturerName"]);
+                $('input[name="partyManufacturerName"]').val(resp.data["partyManufacturerName"]);
+                $('input[name="materialNumber"]').val(resp.data["materialNumber"]);
+                $('input[name="productName"]').val(resp.data["productName"]);
 
-                $('input[name="unitPriceUSD"]').val(resp.data[0]["unitPriceUSD"]);
-                $('input[name="totalUSD"]').val(resp.data[0]["totalUSD"]);
-                $('input[name="paymentTerms"]').val(resp.data[0]["paymentTerms"]);
-                $('input[name="purchaseOrderNo"]').val(resp.data[0]["purchaseOrderNo"]);
-                $('input[name="contractNo"]').val(resp.data[0]["contractNo"]);
+                $('input[name="description"]').val(resp.data["description"]);
+                $('input[name="quantity"]').val(resp.data["quantity"]);
+                $('input[name="unitPrice"]').val(resp.data["unitPrice"]);
+                $('input[name="totalPrice"]').val(resp.data["totalPrice"]);
 
-                $('input[name="signOff"]').val(resp.data[0]["signOff"]);
-                $('input[name="remark"]').val(resp.data[0]["remark"]);
-                $('input[name="materialsSent"]').val(resp.data[0]["materialsSent"]);
-                $('input[name="department"]').val(resp.data[0]["department"]);
-                $('input[name="manager"]').val(resp.data[0]["manager"]);
+                $('input[name="unitPriceUSD"]').val(resp.data["unitPriceUSD"]);
+                $('input[name="totalUSD"]').val(resp.data["totalUSD"]);
+                $('input[name="paymentTerms"]').val(resp.data["paymentTerms"]);
+                $('input[name="purchaseOrderNo"]').val(resp.data["purchaseOrderNo"]);
+                $('input[name="contractNo"]').val(resp.data["contractNo"]);
+
+                $('input[name="signOff"]').val(resp.data["signOff"]);
+                $('input[name="remark"]').val(resp.data["remark"]);
+                $('input[name="materialsSent"]').val(resp.data["materialsSent"]);
+                $('input[name="department"]').val(resp.data["department"]);
+                $('input[name="manager"]').val(resp.data["manager"]);
                 
-                $('input[name="fixedAssetNumber"]').val(resp.data[0]["fixedAssetNumber"]);
-                $('input[name="serialNumber"]').val(resp.data[0]["serialNumber"]);
-                $('input[name="location"]').val(resp.data[0]["location"]);
-                $('input[name="PIC"]').val(resp.data[0]["pic"]);
-                $('[name="NOTE"]').val(resp.data[0]["note"]);
+                $('input[name="fixedAssetNumber"]').val(resp.data["fixedAssetNumber"]);
+                $('input[name="serialNumber"]').val(resp.data["serialNumber"]);
+                $('input[name="location"]').val(resp.data["location"]);
+                $('input[name="PIC"]').val(resp.data["pic"]);
+                $('[name="NOTE"]').val(resp.data["note"]);
 
 
-                $('input[name="accumulatedDepreciation"]').val(resp.data[0]["accumulatedDepreciation"]);
-                $('input[name="category"]').val(resp.data[0]["category"]);
-                $('input[name="netBookValue"]').val(resp.data[0]["netBookValue"]);
-                $('input[name="usefulLife"]').val(resp.data[0]["usefulLife"]);
-                $('[name="capitalizationDate"]').val(resp.data[0]["capitalizationDate"]);
+                $('input[name="accumulatedDepreciation"]').val(resp.data["accumulatedDepreciation"]);
+                $('input[name="category"]').val(resp.data["category"]);
+                $('input[name="netBookValue"]').val(resp.data["netBookValue"]);
+                $('input[name="usefulLife"]').val(resp.data["usefulLife"]);
+                try{ 
+                    let date = new Date(resp.data["capitalizationDate"]);
+                    let formatted = date.toISOString().split('T')[0];
+                    $('[name="capitalizationDate"]').val(formatted);
+                }catch(ex){
+                    $('[name="capitalizationDate"]').val(null);
+                }
                 console.log(resp.data); 
         });
     });
