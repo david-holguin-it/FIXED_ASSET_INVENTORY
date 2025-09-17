@@ -45,14 +45,14 @@ namespace FIXED_ASSET_INVENTORY.Controllers
         }
 
         [AllowAnonymous]
-        [HttpGet("Login")]
+        [HttpGet]
         public IActionResult Login()
         { 
             return View();
         }
 
         [AllowAnonymous]
-        [HttpPost("Login")]
+        [HttpPost]
         public async Task<IActionResult> Login(LoginRequest model)
         {
             using (var context = new PrincipalContext(ContextType.Domain, "iec.inventec"))
@@ -70,7 +70,7 @@ namespace FIXED_ASSET_INVENTORY.Controllers
 
             await HttpContext.SignInAsync("MyCookieAuth", principal);
 
-            return LocalRedirect("Home/Index");
+            return RedirectToAction("Index", "Home");
         }
 
         // Logout
