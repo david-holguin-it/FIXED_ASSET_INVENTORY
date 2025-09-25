@@ -7,12 +7,11 @@
         public string partyManufacturerName { get; set; }
         public string materialNumber { get; set; }
         public string productName { get; set; }
-        public string description { get; set; }
-        public int quantity { get; set; }
+        public string description { get; set; } 
         public float unitPrice { get; set; }
-        public float totalPrice { get; set; }
+        public float totalPrice { get; set; }       //
         public float unitPriceUSD { get; set; }
-        public float totalUSD { get; set; }
+        public float totalUSD { get; set; }         //
         public string paymentTerms { get; set; }
         public string purchaseOrderNo { get; set; }
         public string contractNo { get; set; }
@@ -24,16 +23,11 @@
         public string fixedAssetNumber { get; set; }
         public string serialNumber { get; set; }
         public string location { get; set; }
-        public string PIC { get; set; }
-        public string NOTE { get; set; }
-        public float accumulatedDepreciation { get; set; }
-        public string category { get; set; }
+        public string PIC { get; set; } 
+        public float accumulatedDepreciation { get; set; } 
         public float netBookValue { get; set; }
         public int usefulLife { get; set; }
         public DateTime capitalizationDate { get; set; } 
-
-        public string updatedBY { get; set; }
-
+        public string updatedBy { get; set; }
     };
-
 }

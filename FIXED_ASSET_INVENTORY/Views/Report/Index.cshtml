@@ -1,8 +1,111 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
 }
+<style>
+    .NoValue {
+        color: gray;
+        background-color: #f4f4f4 !important;
+    }
 
+    .PC {
+        color: #8f8d28;
+    }
+
+    .MACHINE {
+        color: #005f52;
+    }
+</style>
 <div class="text-center">
-    <h1 class="display-4">Reports</h1>
-    <p>Put reports here.</p>
+    <h1 class="display-4">Reports</h1> 
+    <div class="d-grid gap-2">
+        <button class="btn btn-success" id="btnGetReport" value="Download">Download xlsx</button>
+    </div>
+    <table id="rTable">
+        <thead id="rThead">
+            <tr> 
+                <th>Manufacturer Name</th>
+                <th>Third Party Manufacturer Name</th>
+                <th>Material number</th>
+                <th>Description</th>
+                <th>Unit Price USD</th>
+                <th>Purchase Order</th>
+                <th>DEPARTMENT</th>
+                <th>Fixed Asset Number</th>
+                <th>SERIAL NUMBER</th>
+                <th>LOCATION</th>
+                <th>PIC</th>
+                <th>Netbookvalue</th>
+            </tr>
+        </thead>
+        <tbody id="rTbody">
+        </tbody>
+    </table>
 </div>
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+
+<!-- DataTables -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+
+<script type="text/javascript">
+    $(document).ready(function(e){
+        $("#rTable").DataTable({
+            ajax: {
+                url: '/Report/getReportData', // tu acción en el controlador
+                type: 'GET',
+                dataSrc: 'data' // aquí le dices que saque los datos del campo "data"
+            },
+            columns: [ 
+         //       { data: "id", render: function (data, type, row) { return data; } },
+                { data: "manufacturerName", render: function (data, type, row) { return data; } },
+                { data: "partyManufacturerName", render: function (data, type, row) { return data; } },
+                { data: "materialNumber", render: function (data, type, row) { return data; } },
+                { data: "description", render: function (data, type, row) { return data; } },
+                { data: "unitPrice", render: function (data, type, row) { return data; } },
+                { data: "purchaseOrderNo", render: function (data, type, row) { return data; } },
+                { data: "department", render: function (data, type, row) { return data; } },
+                { data: "fixedAssetNumber", render: function (data, type, row) { return data; } },
+                { data: "serialNumber", render: function (data, type, row) { return data; } },
+                { data: "location", render: function (data, type, row) { return data; } },
+                { data: "pic", render: function (data, type, row) { return data; } },
+                { data: "netBookValue", render: function (data, type, row) { return data; } }
+            ],
+            createdRow: function (row, data, dataIndex) {
+                console.log(data);
+                if (data["glAccount"] == "15005") { // example condition
+                    $(row).addClass('MACHINE');
+                }else if (data["glAccount"] == "15003") { // example condition
+                    $(row).addClass('PC');
+                }else if (data["glAccount"] == "") { // example condition
+                    $(row).addClass('NoValue');
+                }
+            }
+        });
+    });
+    $(document).on("click","#btnGetReport",function(){
+        // download excel page
+        $.ajax({
+            url: '/Report/DownloadReport', // tu acción en el controlador
+            type: 'GET',
+            xhrFields: {
+                responseType: 'blob' // importante para recibir un archivo
+            },
+            success: function (data) {
+                var a = document.createElement('a');
+                var url = window.URL.createObjectURL(data);
+                a.href = url;
+                a.download = 'FixedAssetReport.xlsx'; // nombre del archivo a descargar
+                document.body.append(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+            },
+            error: function () {
+                alert('Error al descargar el archivo');
+            }
+        });
+    });
+</script>

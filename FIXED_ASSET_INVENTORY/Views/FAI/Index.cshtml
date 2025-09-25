@@ -46,27 +46,15 @@
                         <div class="col-md-3">
                             <label class="form-label">Description</label>
                             <input type="text" class="form-control" name="description">
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Quantity</label>
-                            <input type="number" class="form-control" name="quantity" required>
-                        </div>
+                        </div> 
                         <div class="col-md-3">
                             <label class="form-label">Unit Price</label>
                             <input type="number" step="0.01" class="form-control" name="unitPrice" required>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Total Price</label>
-                            <input type="number" step="0.01" class="form-control" name="totalPrice" readonly>
-                        </div>
+                        </div> 
                         <div class="col-md-3">
                             <label class="form-label">Unit Price USD</label>
                             <input type="number" step="0.01" class="form-control" name="unitPriceUSD">
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Total USD</label>
-                            <input type="number" step="0.01" class="form-control" name="totalUSD" readonly>
-                        </div>
+                        </div> 
                         <div class="col-md-3">
                             <label class="form-label">Payment Terms</label>
                             <input type="text" class="form-control" name="paymentTerms">
@@ -82,10 +70,6 @@
                         <div class="col-md-3">
                             <label class="form-label">Sign Off</label>
                             <input type="text" class="form-control" name="signOff">
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Remark</label>
-                            <input type="text" class="form-control" name="remark">
                         </div>
                         <div class="col-md-3">
                             <label class="form-label">Materials Sent</label>
@@ -114,18 +98,10 @@
                         <div class="col-md-3">
                             <label class="form-label">PIC</label>
                             <input type="text" class="form-control" name="PIC">
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Acc Depreciation</label> 
-                            <input type="text" class="form-control" name="accumulatedDepreciation" />
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Category</label> 
-                            <input type="text" class="form-control" name="category" />
-                        </div>
+                        </div> 
                         <div class="col-md-3">
                             <label class="form-label">Net Book Value</label> 
-                            <input type="text" class="form-control" name="netBookValue" />
+                            <input type="number" class="form-control" name="netBookValue" />
                         </div>
                         <div class="col-md-3">
                             <label class="form-label">Useful Life</label>
@@ -136,8 +112,8 @@
                             <input type="date" class="form-control" name="capitalizationDate"/>
                         </div>
                         <div class="col-md-12">
-                            <label class="form-label">NOTE</label>
-                            <textarea class="form-control" name="NOTE"></textarea>
+                            <label class="form-label">Remarks</label>
+                            <input type="text" class="form-control" name="remark">
                         </div>
                     </div>
                 </form>
@@ -145,6 +121,7 @@
             <div class="modal-footer">  
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
                 <button type="button" class="btn btn-primary" id="saveItemBtn">Guardar</button>
+                <button type="button" class="btn btn-success" id="createNewItemBtn">Crear</button>
             </div>
         </div>
     </div>
@@ -152,10 +129,14 @@
 
 
 
-
 <div>
     Upload from template
     <form asp-controller="FAI" asp-action="Upload" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="userName" value="@ViewData["username"]" />
+        <input type="radio" id="template1" name="page" value="1" checked>
+        <label for="template1">Page 1</label>
+        <input type="radio" id="template2" name="page" value="2">
+        <label for="template2">Page 2</label>
         <div>
             <input type="file" name="file" class="btn default" />
         </div>
@@ -165,6 +146,7 @@
     </form>
 </div>
 
+<button id="btnNew" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#itemEditModal" style="float:right;">+ Add item</button>
 <table class="table" id="tblInv">
     <thead> 
         <tr>   
@@ -172,10 +154,9 @@
             <th>Manufacturer Name   </th> 
             <th>Material Number     </th>
             <th>Product Name        </th>
-            <th>Description         </th>
-            <th>Quantity            </th>
+            <th>Description         </th> 
             <th>Unit Price          </th>
-            <th>Total Price         </th>
+            <th>Net Book Value      </th>
             <th>Edit / Delete       </th>
         </tr>
     </thead>
@@ -209,10 +190,9 @@
                 { data: 'manufacturerName'  },
                 { data: 'materialNumber'    },
                 { data: 'productName'       },
-                { data: 'description'       },
-                { data: 'quantity'          },
+                { data: 'description'       }, 
                 { data: 'unitPrice'         },
-                { data: 'totalPrice'        },
+                { data: 'netBookValue'      },
                 { data: null,
                     render:function(data, type, row){
                         var strBtns='<button id="edit_'+data.id+'" type="button" class="btn btn-primary btnEdit" data-bs-toggle="modal" data-bs-target="#itemEditModal"><i class="fas fa-pencil-alt"></i></button>';
@@ -232,13 +212,10 @@
                 $('input[name="partyManufacturerName"]').val("");
                 $('input[name="materialNumber"]').val("");
                 $('input[name="productName"]').val("");
-                $('input[name="description"]').val("");
-                $('input[name="quantity"]').val("");
-                $('input[name="unitPrice"]').val("");
-                $('input[name="totalPrice"]').val("");
+                $('input[name="description"]').val(""); 
+                $('input[name="unitPrice"]').val(""); 
 
-                $('input[name="unitPriceUSD"]').val("");
-                $('input[name="totalUSD"]').val("");
+                $('input[name="unitPriceUSD"]').val(""); 
                 $('input[name="paymentTerms"]').val("");
                 $('input[name="purchaseOrderNo"]').val("");
                 $('input[name="contractNo"]').val("");
@@ -253,26 +230,22 @@
                 $('input[name="serialNumber"]').val("");
                 $('input[name="location"]').val("");
                 $('input[name="PIC"]').val("");
-                $('[name="NOTE"]').val("");
+                $('input[name="netBookValue"]').val("");
     }
     
-    $(document).on("click","#saveItemBtn",function(e){
+    $(document).on("click","#createNewItemBtn",function(e){
         var id=$(this).attr("id").split("_")[1]; 
-        $.post('/FAI/EditItem',
+        $.post('/FAI/CreateItem',
             {
-                id:$('input[name="id"]').val(),
+                id:"0",
                 manufacturerName:$('input[name="manufacturerName"]').val(),
                 partyManufacturerName:$('input[name="partyManufacturerName"]').val(),
                 materialNumber:$('input[name="materialNumber"]').val(),
                 productName:$('input[name="productName"]').val(),
                 description:$('input[name="description"]').val(),
-
-                quantity:$('input[name="quantity"]').val(),
-                unitPrice:$('input[name="unitPrice"]').val(),
-                totalPrice:$('input[name="totalPrice"]').val(),
-
-                unitPriceUSD:$('input[name="unitPriceUSD"]').val(),
-                totalUSD:$('input[name="totalUSD"]').val(),
+                 
+                unitPrice:$('input[name="unitPrice"]').val(),  
+                unitPriceUSD:$('input[name="unitPriceUSD"]').val(), 
                 paymentTerms:$('input[name="paymentTerms"]').val(),
                 purchaseOrderNo:$('input[name="purchaseOrderNo"]').val(),
                 contractNo:$('input[name="contractNo"]').val(),
@@ -286,24 +259,65 @@
                 fixedAssetNumber:$('input[name="fixedAssetNumber"]').val(),
                 serialNumber:$('input[name="serialNumber"]').val(),
                 location:$('input[name="location"]').val(),
-                PIC:$('input[name="PIC"]').val(),
-                NOTE:$('[name="NOTE"]').val(),
-
-                accumulatedDepreciation:$('input[name="accumulatedDepreciation"]').val(),
-                category:$('input[name="category"]').val(),
+                PIC:$('input[name="PIC"]').val(), 
+                 
                 netBookValue:$('input[name="netBookValue"]').val(),
                 usefulLife:$('input[name="usefulLife"]').val(),
-                capitalizationDate:$('[name="capitalizationDate"]').val()
+                capitalizationDate:$('[name="capitalizationDate"]').val(),
+
+                updatedBy:$('[name="userName"]').val()
             },
             function(resp){ 
                 alert("Changes were saved");
         });
     });
+
+    $(document).on("click","#saveItemBtn",function(e){
+        $.post('/FAI/EditItem',
+            {
+                id:$('input[name="id"]').val(),
+                manufacturerName:$('input[name="manufacturerName"]').val(),
+                partyManufacturerName:$('input[name="partyManufacturerName"]').val(),
+                materialNumber:$('input[name="materialNumber"]').val(),
+                productName:$('input[name="productName"]').val(),
+                description:$('input[name="description"]').val(),
+                 
+                unitPrice:$('input[name="unitPrice"]').val(), 
+
+                unitPriceUSD:$('input[name="unitPriceUSD"]').val(), 
+                paymentTerms:$('input[name="paymentTerms"]').val(),
+                purchaseOrderNo:$('input[name="purchaseOrderNo"]').val(),
+                contractNo:$('input[name="contractNo"]').val(),
+
+                signOff:$('input[name="signOff"]').val(),
+                remark:$('input[name="remark"]').val(),
+                materialsSent:$('input[name="materialsSent"]').val(),
+                department:$('input[name="department"]').val(),
+                manager:$('input[name="manager"]').val(),
+
+                fixedAssetNumber:$('input[name="fixedAssetNumber"]').val(),
+                serialNumber:$('input[name="serialNumber"]').val(),
+                location:$('input[name="location"]').val(),
+                PIC:$('input[name="PIC"]').val(), 
+                 
+                netBookValue:$('input[name="netBookValue"]').val(),
+                usefulLife:$('input[name="usefulLife"]').val(),
+                capitalizationDate:$('[name="capitalizationDate"]').val(),
+
+                updatedBy:$('[name="userName"]').val()
+            },
+            function(resp){
+                alert("Changes were saved");
+        });
+    });
     
-    $(document).on("click",".btnEdit",function(e){ 
+    $(document).on("click",".btnEdit",function(e){
+        $("#itemEditModalLabel").html("Edit Register");
         clearModal(); 
         $("#loader").show();
         $("#itemEditForm").hide();
+        $("#saveItemBtn").show();
+        $("#createNewItemBtn").hide();
         $("#saveItemBtn").attr("disabled",true);
 
         var id = $(this).attr("id").split("_")[1]; 
@@ -321,13 +335,10 @@
                 $('input[name="materialNumber"]').val(resp.data["materialNumber"]);
                 $('input[name="productName"]').val(resp.data["productName"]);
 
-                $('input[name="description"]').val(resp.data["description"]);
-                $('input[name="quantity"]').val(resp.data["quantity"]);
-                $('input[name="unitPrice"]').val(resp.data["unitPrice"]);
-                $('input[name="totalPrice"]').val(resp.data["totalPrice"]);
+                $('input[name="description"]').val(resp.data["description"]); 
+                $('input[name="unitPrice"]').val(resp.data["unitPrice"]); 
 
-                $('input[name="unitPriceUSD"]').val(resp.data["unitPriceUSD"]);
-                $('input[name="totalUSD"]').val(resp.data["totalUSD"]);
+                $('input[name="unitPriceUSD"]').val(resp.data["unitPriceUSD"]); 
                 $('input[name="paymentTerms"]').val(resp.data["paymentTerms"]);
                 $('input[name="purchaseOrderNo"]').val(resp.data["purchaseOrderNo"]);
                 $('input[name="contractNo"]').val(resp.data["contractNo"]);
@@ -341,12 +352,9 @@
                 $('input[name="fixedAssetNumber"]').val(resp.data["fixedAssetNumber"]);
                 $('input[name="serialNumber"]').val(resp.data["serialNumber"]);
                 $('input[name="location"]').val(resp.data["location"]);
-                $('input[name="PIC"]').val(resp.data["pic"]);
-                $('[name="NOTE"]').val(resp.data["note"]);
+                $('input[name="PIC"]').val(resp.data["pic"]); 
 
-
-                $('input[name="accumulatedDepreciation"]').val(resp.data["accumulatedDepreciation"]);
-                $('input[name="category"]').val(resp.data["category"]);
+                 
                 $('input[name="netBookValue"]').val(resp.data["netBookValue"]);
                 $('input[name="usefulLife"]').val(resp.data["usefulLife"]);
                 try{ 
@@ -373,7 +381,13 @@
         );
     });
     
-
+    $(document).on("click","#btnNew",function(e){
+        $("#itemEditModalLabel").html("New item");
+        $("#loader").hide();
+        $("#saveItemBtn").hide();
+        $("#createNewItemBtn").show(); 
+        clearModal();
+    });
     $(document).ready(function(){
         getData();
     });
