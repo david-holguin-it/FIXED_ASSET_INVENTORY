@@ -206,112 +206,53 @@
         }); 
     }
     function clearModal(){
+                
+        $('input[name="id"]').val("");
 
-                $('input[name="id"]').val("");
-                $('input[name="manufacturerName"]').val("");
-                $('input[name="partyManufacturerName"]').val("");
-                $('input[name="materialNumber"]').val("");
-                $('input[name="productName"]').val("");
-                $('input[name="description"]').val(""); 
-                $('input[name="unitPrice"]').val(""); 
-
-                $('input[name="unitPriceUSD"]').val(""); 
-                $('input[name="paymentTerms"]').val("");
-                $('input[name="purchaseOrderNo"]').val("");
-                $('input[name="contractNo"]').val("");
-
-                $('input[name="signOff"]').val("");
-                $('input[name="remark"]').val("");
-                $('input[name="materialsSent"]').val("");
-                $('input[name="department"]').val("");
-                $('input[name="manager"]').val("");
-
-                $('input[name="fixedAssetNumber"]').val("");
-                $('input[name="serialNumber"]').val("");
-                $('input[name="location"]').val("");
-                $('input[name="PIC"]').val("");
-                $('input[name="netBookValue"]').val("");
+        $("input.form-control").each(function(i,ele){
+            var name = $(ele).attr("name"); // propiedad 
+                $(ele).val("");
+        }); 
     }
     
     $(document).on("click","#createNewItemBtn",function(e){
+        $("#createNewItemBtn").prop("disabled",true);
         var id=$(this).attr("id").split("_")[1]; 
-        $.post('/FAI/CreateItem',
-            {
-                id:"0",
-                manufacturerName:$('input[name="manufacturerName"]').val(),
-                partyManufacturerName:$('input[name="partyManufacturerName"]').val(),
-                materialNumber:$('input[name="materialNumber"]').val(),
-                productName:$('input[name="productName"]').val(),
-                description:$('input[name="description"]').val(),
-                 
-                unitPrice:$('input[name="unitPrice"]').val(),  
-                unitPriceUSD:$('input[name="unitPriceUSD"]').val(), 
-                paymentTerms:$('input[name="paymentTerms"]').val(),
-                purchaseOrderNo:$('input[name="purchaseOrderNo"]').val(),
-                contractNo:$('input[name="contractNo"]').val(),
-
-                signOff:$('input[name="signOff"]').val(),
-                remark:$('input[name="remark"]').val(),
-                materialsSent:$('input[name="materialsSent"]').val(),
-                department:$('input[name="department"]').val(),
-                manager:$('input[name="manager"]').val(),
-
-                fixedAssetNumber:$('input[name="fixedAssetNumber"]').val(),
-                serialNumber:$('input[name="serialNumber"]').val(),
-                location:$('input[name="location"]').val(),
-                PIC:$('input[name="PIC"]').val(), 
-                 
-                netBookValue:$('input[name="netBookValue"]').val(),
-                usefulLife:$('input[name="usefulLife"]').val(),
-                capitalizationDate:$('[name="capitalizationDate"]').val(),
-
-                updatedBy:$('[name="userName"]').val()
-            },
-            function(resp){ 
-                alert("Changes were saved");
+        var data={};
+        $("input.form-control").each(function(i,ele){
+            var name = $(ele).attr("name"); // propiedad
+            var value = $(ele).val();       // valor
+            data[name]=value;
+        });
+        data["updatedBy"]=$('[name="userName"]').val();
+        $.post('/FAI/CreateItem', data, function(resp){
+            $("#createNewItemBtn").attr("disabled",false);
+            alert(resp.msg);
+        }).fail(function(xhr, status, error){
+            $("#createNewItemBtn").attr("disabled",false);
         });
     });
 
     $(document).on("click","#saveItemBtn",function(e){
-        $.post('/FAI/EditItem',
-            {
-                id:$('input[name="id"]').val(),
-                manufacturerName:$('input[name="manufacturerName"]').val(),
-                partyManufacturerName:$('input[name="partyManufacturerName"]').val(),
-                materialNumber:$('input[name="materialNumber"]').val(),
-                productName:$('input[name="productName"]').val(),
-                description:$('input[name="description"]').val(),
-                 
-                unitPrice:$('input[name="unitPrice"]').val(), 
-
-                unitPriceUSD:$('input[name="unitPriceUSD"]').val(), 
-                paymentTerms:$('input[name="paymentTerms"]').val(),
-                purchaseOrderNo:$('input[name="purchaseOrderNo"]').val(),
-                contractNo:$('input[name="contractNo"]').val(),
-
-                signOff:$('input[name="signOff"]').val(),
-                remark:$('input[name="remark"]').val(),
-                materialsSent:$('input[name="materialsSent"]').val(),
-                department:$('input[name="department"]').val(),
-                manager:$('input[name="manager"]').val(),
-
-                fixedAssetNumber:$('input[name="fixedAssetNumber"]').val(),
-                serialNumber:$('input[name="serialNumber"]').val(),
-                location:$('input[name="location"]').val(),
-                PIC:$('input[name="PIC"]').val(), 
-                 
-                netBookValue:$('input[name="netBookValue"]').val(),
-                usefulLife:$('input[name="usefulLife"]').val(),
-                capitalizationDate:$('[name="capitalizationDate"]').val(),
-
-                updatedBy:$('[name="userName"]').val()
-            },
-            function(resp){
-                alert("Changes were saved");
+        $("#saveItemBtn").attr("disabled",true);
+        var data={};
+        $("input.form-control").each(function(i,ele){
+            var name = $(ele).attr("name"); // propiedad
+            var value = $(ele).val();       // valor
+            data[name]=value;
         });
+        data["id"]=$('input[name="id"]').val()
+        data["updatedBy"]=$('[name="userName"]').val()
+        $.post('/FAI/EditItem', data, 
+            function(resp){
+                $("#saveItemBtn").attr("disabled",false);
+                alert("Changes were saved");
+            }).fail(function(xhr, status, error){
+                $("#saveItemBtn").attr("disabled",false);
+            });
     });
     
-    $(document).on("click",".btnEdit",function(e){
+    $(document).on("click",".btnEdit", function(e){
         $("#itemEditModalLabel").html("Edit Register");
         clearModal(); 
         $("#loader").show();
@@ -323,48 +264,33 @@
         var id = $(this).attr("id").split("_")[1]; 
         $("#editId").html("["+id+"]");
         $.get('/FAI/GetItem',
-            {id:id},
-            function(resp){
+        {id:id},
+        function(resp){
             $("#itemEditForm").show(); 
             $("#loader").hide();
-                $("#saveItemBtn").attr("disabled",false);
+            $("#saveItemBtn").attr("disabled",false);
 
-                $('input[name="id"]').val(resp.data["id"]);
-                $('input[name="manufacturerName"]').val(resp.data["manufacturerName"]);
-                $('input[name="partyManufacturerName"]').val(resp.data["partyManufacturerName"]);
-                $('input[name="materialNumber"]').val(resp.data["materialNumber"]);
-                $('input[name="productName"]').val(resp.data["productName"]);
-
-                $('input[name="description"]').val(resp.data["description"]); 
-                $('input[name="unitPrice"]').val(resp.data["unitPrice"]); 
-
-                $('input[name="unitPriceUSD"]').val(resp.data["unitPriceUSD"]); 
-                $('input[name="paymentTerms"]').val(resp.data["paymentTerms"]);
-                $('input[name="purchaseOrderNo"]').val(resp.data["purchaseOrderNo"]);
-                $('input[name="contractNo"]').val(resp.data["contractNo"]);
-
-                $('input[name="signOff"]').val(resp.data["signOff"]);
-                $('input[name="remark"]').val(resp.data["remark"]);
-                $('input[name="materialsSent"]').val(resp.data["materialsSent"]);
-                $('input[name="department"]').val(resp.data["department"]);
-                $('input[name="manager"]').val(resp.data["manager"]);
-                
-                $('input[name="fixedAssetNumber"]').val(resp.data["fixedAssetNumber"]);
-                $('input[name="serialNumber"]').val(resp.data["serialNumber"]);
-                $('input[name="location"]').val(resp.data["location"]);
-                $('input[name="PIC"]').val(resp.data["pic"]); 
-
-                 
-                $('input[name="netBookValue"]').val(resp.data["netBookValue"]);
-                $('input[name="usefulLife"]').val(resp.data["usefulLife"]);
-                try{ 
-                    let date = new Date(resp.data["capitalizationDate"]);
-                    let formatted = date.toISOString().split('T')[0];
-                    $('[name="capitalizationDate"]').val(formatted);
-                }catch(ex){
-                    $('[name="capitalizationDate"]').val(null);
+            for (var key in resp.data) {
+                if (resp.data.hasOwnProperty(key)) {
+                    // console.log(key, resp.data[key]);
+                    var valor = resp.data[key];
+                    var elemento = $('[name="' + key + '"]'); 
+                    if(elemento.length > 0){
+                        // Detectar si es campo de tipo date
+                        if(elemento.attr('type') === 'date' && valor){
+                            try {
+                                let date = new Date(valor);
+                                valor = date.toISOString().split('T')[0];
+                            } catch (ex) {
+                                valor = null;
+                            }
+                        }
+                        elemento.val(valor);
+                    }
                 }
-                console.log(resp.data); 
+            }  
+        }).fail(function(xhr, status, error){
+            $("#saveItemBtn").attr("disabled",false);
         });
     });
     
@@ -376,9 +302,11 @@
             {id:id},
             function(resp){
                 tbl.ajax.reload();
-                alert("Item was Removed");
+                alert(resp.message);
             }
-        );
+        ).fail(function(xhr, status, error){
+            alert("An Error has ocurred trrying to delete item");
+        });
     });
     
     $(document).on("click","#btnNew",function(e){
@@ -388,6 +316,7 @@
         $("#createNewItemBtn").show(); 
         clearModal();
     });
+
     $(document).ready(function(){
         getData();
     });
