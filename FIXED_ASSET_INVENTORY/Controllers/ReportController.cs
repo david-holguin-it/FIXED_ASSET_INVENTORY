@@ -1,4 +1,5 @@
 ﻿using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Drawing.Charts;
 using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Authorization;
@@ -37,19 +38,20 @@ namespace FIXED_ASSET_INVENTORY.Controllers
                 {
                     id                      = reader["id"]                      == DBNull.Value ?"0" : reader["id"].ToString(),
                     manufacturerName        = reader["manufacturerName"]        == DBNull.Value ? "" : reader["manufacturerName"].ToString(),
-                    partyManufacturerName   = reader["partyManufacturerName"]   == DBNull.Value ? "" : reader["partyManufacturerName"].ToString(),
+                    partyManufacturerName   = reader["partyManufacturerName"]   == DBNull.Value ? "" : reader["partyManufacturerName"].ToString(),  // TBD
                     materialNumber          = reader["materialNumber"]          == DBNull.Value ? "" : reader["materialNumber"].ToString(), 
                     description             = reader["description"]             == DBNull.Value ? "" : reader["description"].ToString(),
-                    unitPrice               = reader["unitPriceUSD"]            == DBNull.Value ? "" : reader["unitPriceUSD"].ToString(),
+                    purchaseValue           = reader["purchaseValue"]           == DBNull.Value ? "" : reader["purchaseValue"].ToString(),
+                    accumulatedDepreciation = reader["accumulatedDepreciation"] == DBNull.Value ? "" : reader["accumulatedDepreciation"].ToString(),
+                    netBookValue            = reader["netBookValue"]            == DBNull.Value ? "" : reader["netBookValue"].ToString(),
                     purchaseOrderNo         = reader["purchaseOrderNo"]         == DBNull.Value ? "" : reader["purchaseOrderNo"].ToString(),
                     department              = reader["department"]              == DBNull.Value ? "" : reader["department"].ToString(),
                     fixedAssetNumber        = reader["fixedAssetNumber"]        == DBNull.Value ? "" : reader["fixedAssetNumber"].ToString(),
                     serialNumber            = reader["serialNumber"]            == DBNull.Value ? "" : reader["serialNumber"].ToString(),
                     location                = reader["location"]                == DBNull.Value ? "" : reader["location"].ToString(),
                     PIC                     = reader["PIC"]                     == DBNull.Value ? "" : reader["PIC"].ToString(),
-                    netBookValue            = reader["netBookValue"]            == DBNull.Value ? "" : reader["netBookValue"].ToString(),
                     glAccount               = reader["glAccount"]               == DBNull.Value ? "" : reader["glAccount"].ToString()
-                };
+                }; 
                 dr.Add(record);
             }
             return Json(new
@@ -68,14 +70,15 @@ namespace FIXED_ASSET_INVENTORY.Controllers
                 worksheet.Cell(1, 2).Value = "Third Party Manufacturer Name";
                 worksheet.Cell(1, 3).Value = "Material number";
                 worksheet.Cell(1, 4).Value = "Description";
-                worksheet.Cell(1, 5).Value = "Unit Price USD";
+                worksheet.Cell(1, 5).Value = "Purchase Value (USD)";
+                worksheet.Cell(1, 5).Value = "Accumulated Depreciation";
+                worksheet.Cell(1, 12).Value = "Net Book Value";
                 worksheet.Cell(1, 6).Value = "Purchase Order";
                 worksheet.Cell(1, 7).Value = "Department";
                 worksheet.Cell(1, 8).Value = "Fixed Asset Number";
                 worksheet.Cell(1, 9).Value = "Serial Number";
                 worksheet.Cell(1,10).Value = "Location";
                 worksheet.Cell(1,11).Value = "PIC";
-                worksheet.Cell(1,12).Value = "Net Book Value";
                 worksheet.Range("A1:L1").Style.Fill.BackgroundColor = XLColor.LightGray;
                 worksheet.Range("A1:L1").Style.Font.Bold = true;
                 // 3. Agregar algunas filas de ejemplo
@@ -90,17 +93,18 @@ namespace FIXED_ASSET_INVENTORY.Controllers
                 {
                     //  worksheet.Cell(row, 1).Value  = reader["id"] == DBNull.Value ? "0" : reader["id"].ToString(),
                     worksheet.Cell(row, 1).Value = reader["manufacturerName"]       == DBNull.Value ? "" : reader["manufacturerName"].ToString(); 
-                    worksheet.Cell(row, 2).Value = reader["partyManufacturerName"]  == DBNull.Value ? "" : reader["partyManufacturerName"].ToString();
+                    worksheet.Cell(row, 2).Value = reader["partyManufacturerName"]  == DBNull.Value ? "" : reader["partyManufacturerName"].ToString();   // TBD
                     worksheet.Cell(row, 3).Value = reader["materialNumber"]         == DBNull.Value ? "" : reader["materialNumber"].ToString();
                     worksheet.Cell(row, 4).Value = reader["description"]            == DBNull.Value ? "" : reader["description"].ToString();
-                    worksheet.Cell(row, 5).Value = reader["unitPriceUSD"]           == DBNull.Value ? "" : reader["unitPriceUSD"].ToString();
+                    worksheet.Cell(row, 5).Value = reader["purchaseValue"]          == DBNull.Value ? "" : reader["purchaseValue"].ToString();
+                    worksheet.Cell(row, 5).Value = reader["accumulatedDepreciation"]== DBNull.Value ? "" : reader["accumulatedDepreciation"].ToString();
+                    worksheet.Cell(row, 12).Value= reader["netBookValue"]           == DBNull.Value ? "" : reader["netBookValue"].ToString();
                     worksheet.Cell(row, 6).Value = reader["purchaseOrderNo"]        == DBNull.Value ? "" : reader["purchaseOrderNo"].ToString();
                     worksheet.Cell(row, 7).Value = reader["department"]             == DBNull.Value ? "" : reader["department"].ToString();
                     worksheet.Cell(row, 8).Value = reader["fixedAssetNumber"]       == DBNull.Value ? "" : reader["fixedAssetNumber"].ToString();
                     worksheet.Cell(row, 9).Value = reader["serialNumber"]           == DBNull.Value ? "" : reader["serialNumber"].ToString();
                     worksheet.Cell(row,10).Value = reader["location"]               == DBNull.Value ? "" : reader["location"].ToString();
                     worksheet.Cell(row,11).Value = reader["PIC"]                    == DBNull.Value ? "" : reader["PIC"].ToString();
-                    worksheet.Cell(row,12).Value = reader["netBookValue"]           == DBNull.Value ? "" : reader["netBookValue"].ToString();
                     row++;
                 } 
 

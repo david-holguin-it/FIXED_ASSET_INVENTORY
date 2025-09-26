@@ -27,14 +27,15 @@
                 <th>Third Party Manufacturer Name</th>
                 <th>Material number</th>
                 <th>Description</th>
-                <th>Unit Price USD</th>
+                <th>Purchase Value (USD)</th>
+                <th>Accumulated Depreciation</th>
+                <th>Net Book Value</th>
                 <th>Purchase Order</th>
                 <th>DEPARTMENT</th>
                 <th>Fixed Asset Number</th>
                 <th>SERIAL NUMBER</th>
                 <th>LOCATION</th>
                 <th>PIC</th>
-                <th>Netbookvalue</th>
             </tr>
         </thead>
         <tbody id="rTbody">
@@ -60,18 +61,19 @@
             },
             columns: [ 
          //       { data: "id", render: function (data, type, row) { return data; } },
-                { data: "manufacturerName", render: function (data, type, row) { return data; } },
+                { data: "manufacturerName",      render: function (data, type, row) { return data; } },
                 { data: "partyManufacturerName", render: function (data, type, row) { return data; } },
-                { data: "materialNumber", render: function (data, type, row) { return data; } },
-                { data: "description", render: function (data, type, row) { return data; } },
-                { data: "unitPrice", render: function (data, type, row) { return data; } },
-                { data: "purchaseOrderNo", render: function (data, type, row) { return data; } },
-                { data: "department", render: function (data, type, row) { return data; } },
-                { data: "fixedAssetNumber", render: function (data, type, row) { return data; } },
-                { data: "serialNumber", render: function (data, type, row) { return data; } },
-                { data: "location", render: function (data, type, row) { return data; } },
-                { data: "pic", render: function (data, type, row) { return data; } },
-                { data: "netBookValue", render: function (data, type, row) { return data; } }
+                { data: "materialNumber",        render: function (data, type, row) { return data; } },
+                { data: "description",           render: function (data, type, row) { return data; } },
+                { data: "purchaseValue",         render: function (data, type, row) { return data; } },
+                { data: "accumulatedDepreciation",render: function (data, type, row) { return data; } },
+                { data: "netBookValue",          render: function (data, type, row) { return data; } },
+                { data: "purchaseOrderNo",       render: function (data, type, row) { return data; } },
+                { data: "department",            render: function (data, type, row) { return data; } },
+                { data: "fixedAssetNumber",      render: function (data, type, row) { return data; } },
+                { data: "serialNumber",          render: function (data, type, row) { return data; } },
+                { data: "location",              render: function (data, type, row) { return data; } },
+                { data: "pic",                   render: function (data, type, row) { return data; } } 
             ],
             createdRow: function (row, data, dataIndex) {
                 console.log(data);

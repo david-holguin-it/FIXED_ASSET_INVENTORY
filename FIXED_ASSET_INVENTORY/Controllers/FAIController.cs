@@ -48,8 +48,8 @@ namespace FIXED_ASSET_INVENTORY.Controllers
             "materialNumber",
             "productName",
             "description", 
-            "unitPrice", 
-            "unitPriceUSD", 
+            "purchaseValue", 
+            "purchaseValueUSD", 
             "paymentTerms",
             "purchaseOrderNo",
             "contractNo",
@@ -146,9 +146,9 @@ namespace FIXED_ASSET_INVENTORY.Controllers
                         var cellValue5  = cells[4].ToString(); // row.Cell( 5).GetValue<string>(); // product name
                         var cellValue6  = cells[5].ToString(); // row.Cell( 6).GetValue<string>(); // description
                          
-                        var cellValue8  = Convert.ToDecimal(cells[7].ToString()); // row.Cell( 8).GetValue<Decimal>(); // unitPrice
+                        var cellValue8  = Convert.ToDecimal(cells[7].ToString()); // row.Cell( 8).GetValue<Decimal>(); // purchaseValue
                       //  var cellValue9  = Convert.ToDecimal(cells[8].ToString()); // row.Cell( 9).GetValue<Decimal>(); // totalPrice
-                        var cellValue10 = Convert.ToDecimal(cells[9].ToString()); // row.Cell(10).GetValue<Decimal>(); // unitPriceUSD
+                        var cellValue10 = Convert.ToDecimal(cells[9].ToString()); // row.Cell(10).GetValue<Decimal>(); // purchaseValueUSD
                      //   var cellValue11 = Convert.ToDecimal(cells[10].ToString()); // row.Cell(11).GetValue<Decimal>(); // totalUSD
 
                         var cellValue12 = cells[11].ToString(); //row.Cell(12).GetValue<string>(); // paymentTerms
@@ -176,14 +176,14 @@ namespace FIXED_ASSET_INVENTORY.Controllers
                         */
 
                         cmd.Parameters.AddWithValue("@manufacturerName", cellValue2);
-                        cmd.Parameters.AddWithValue("@partyManufacturerName", cellValue3);
+                        cmd.Parameters.AddWithValue("@partyManufacturerName", cellValue3);  // TBD se elimina?
                         cmd.Parameters.AddWithValue("@materialNumber", cellValue4);
                         cmd.Parameters.AddWithValue("@productName", cellValue5);
                         cmd.Parameters.AddWithValue("@description", cellValue6);
                          
-                        cmd.Parameters.AddWithValue("@unitPrice", cellValue8);
+                        cmd.Parameters.AddWithValue("@purchaseValue", cellValue8);
                     //    cmd.Parameters.AddWithValue("@totalPrice", cellValue9);
-                        cmd.Parameters.AddWithValue("@unitPriceUSD", cellValue10);
+                        cmd.Parameters.AddWithValue("@purchaseValueUSD", cellValue10);
                        // cmd.Parameters.AddWithValue("@totalUSD", cellValue11);
 
                         cmd.Parameters.AddWithValue("@paymentTerms", cellValue12);
@@ -251,7 +251,7 @@ namespace FIXED_ASSET_INVENTORY.Controllers
                         materialNumber      = reader.IsDBNull(2) ? "" : reader["materialNumber"].ToString(),
                         productName         = reader.IsDBNull(3) ? "" : reader["productName"].ToString(),
                         description         = reader.IsDBNull(4) ? "" : reader["description"].ToString(),
-                        unitPrice           = reader.IsDBNull(6) ? "" : reader["unitPrice"].ToString(),
+                        purchaseValue           = reader.IsDBNull(6) ? "" : reader["purchaseValue"].ToString(),
                         netBookValue        = reader.IsDBNull(7) ? "" : reader["netBookValue"].ToString()
                     };
                     dr.Add(record);
@@ -285,14 +285,14 @@ namespace FIXED_ASSET_INVENTORY.Controllers
                     SqlCommand cmd = new SqlCommand(insertQuery, con, tran);
                     //    cmd.Parameters.AddWithValue("@id", item.id); 
                     cmd.Parameters.AddWithValue("@manufacturerName", item.manufacturerName);
-                    cmd.Parameters.AddWithValue("@partyManufacturerName", item.partyManufacturerName);
+                    cmd.Parameters.AddWithValue("@partyManufacturerName", item.partyManufacturerName);      // TBD se elimina?
                     cmd.Parameters.AddWithValue("@materialNumber", item.materialNumber);
                     cmd.Parameters.AddWithValue("@productName", item.productName);
                     cmd.Parameters.AddWithValue("@description", item.description);
                      
-                    cmd.Parameters.AddWithValue("@unitPrice", item.unitPrice);
+                    cmd.Parameters.AddWithValue("@purchaseValue", item.purchaseValue);
             //        cmd.Parameters.AddWithValue("@totalPrice", item.totalPrice);
-                    cmd.Parameters.AddWithValue("@unitPriceUSD", item.unitPriceUSD);
+            //        cmd.Parameters.AddWithValue("@purchaseValueUSD", item.purchaseValueUSD);
              //       cmd.Parameters.AddWithValue("@totalUSD", item.totalUSD);
 
                     cmd.Parameters.AddWithValue("@paymentTerms", item.paymentTerms);
@@ -343,8 +343,7 @@ namespace FIXED_ASSET_INVENTORY.Controllers
                     "materialNumber=@materialNumber, " +
                     "productName=@productName, " +
                     "description=@description, " +
-                    "unitPrice=@unitPrice, " +
-                    "unitPriceUSD=@unitPriceUSD, " +
+                    "purchaseValue=@purchaseValue, " + 
                     "paymentTerms=@paymentTerms, " +
                     "purchaseOrderNo=@purchaseOrderNo, " +
                     "contractNo=@contractNo, " +
@@ -366,13 +365,13 @@ namespace FIXED_ASSET_INVENTORY.Controllers
                     cmd.Parameters.AddWithValue("@id", item.id);
 
                     cmd.Parameters.AddWithValue("@manufacturerName", string.IsNullOrEmpty(item.manufacturerName) ? "" : item.manufacturerName);
-                    cmd.Parameters.AddWithValue("@partyManufacturerName", string.IsNullOrEmpty(item.partyManufacturerName) ? "" : item.partyManufacturerName);
+                    cmd.Parameters.AddWithValue("@partyManufacturerName", string.IsNullOrEmpty(item.partyManufacturerName) ? "" : item.partyManufacturerName);      // TBD se elimina?
                     cmd.Parameters.AddWithValue("@materialNumber", string.IsNullOrEmpty(item.materialNumber) ? "" : item.materialNumber);
                     cmd.Parameters.AddWithValue("@productName", string.IsNullOrEmpty(item.productName) ? "" : item.productName);
                     cmd.Parameters.AddWithValue("@description", string.IsNullOrEmpty(item.description) ? "" : item.description);
 
-                    cmd.Parameters.AddWithValue("@unitPrice", item.unitPrice);
-                    cmd.Parameters.AddWithValue("@unitPriceUSD", item.unitPriceUSD);
+                    cmd.Parameters.AddWithValue("@purchaseValue", item.purchaseValue);
+              //      cmd.Parameters.AddWithValue("@purchaseValueUSD", item.purchaseValueUSD);
 
                     cmd.Parameters.AddWithValue("@paymentTerms", string.IsNullOrEmpty(item.paymentTerms) ? "" : item.paymentTerms);
                     cmd.Parameters.AddWithValue("@purchaseOrderNo", string.IsNullOrEmpty(item.purchaseOrderNo) ? "" : item.purchaseOrderNo);
@@ -436,12 +435,11 @@ namespace FIXED_ASSET_INVENTORY.Controllers
                     {
                         id = reader["Id"] == DBNull.Value ? 0 : Convert.ToInt32(reader["Id"]),
                         manufacturerName = reader["manufacturerName"] == DBNull.Value ? "" : reader["manufacturerName"].ToString(),
-                        partyManufacturerName = reader["partyManufacturerName"] == DBNull.Value ? "" : reader["partyManufacturerName"].ToString(),
+                        partyManufacturerName = reader["partyManufacturerName"] == DBNull.Value ? "" : reader["partyManufacturerName"].ToString(),      // TBD se elimina?
                         materialNumber = reader["materialNumber"] == DBNull.Value ? "" : reader["materialNumber"].ToString(),
                         productName = reader["productName"] == DBNull.Value ? "" : reader["productName"].ToString(),
                         description = reader["description"] == DBNull.Value ? "" : reader["description"].ToString(),
-                        unitPrice = reader["manufacturerName"] == DBNull.Value ? 0 : (float)Convert.ToDouble(reader["unitPrice"]),
-                        unitPriceUSD = reader["unitPriceUSD"] == DBNull.Value ? 0 : (float)Convert.ToDouble(reader["unitPriceUSD"]),
+                        purchaseValue = reader["manufacturerName"] == DBNull.Value ? 0 : (float)Convert.ToDouble(reader["purchaseValue"]), 
                         paymentTerms = reader["paymentTerms"] == DBNull.Value ? "" : reader["paymentTerms"].ToString(),
                         purchaseOrderNo = reader["purchaseOrderNo"] == DBNull.Value ? "" : reader["purchaseOrderNo"].ToString(),
                         contractNo = reader["contractNo"] == DBNull.Value ? "" : reader["contractNo"].ToString(),

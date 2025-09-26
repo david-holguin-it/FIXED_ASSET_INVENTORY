@@ -4,14 +4,14 @@
     {
         public int id { get; set;}
         public string manufacturerName { get; set; }
-        public string partyManufacturerName { get; set; }
+        public string partyManufacturerName { get; set; }   // TBD se elimina?
         public string materialNumber { get; set; }
         public string productName { get; set; }
         public string description { get; set; } 
-        public float unitPrice { get; set; }
-        public float totalPrice { get; set; }       //
-        public float unitPriceUSD { get; set; }
-        public float totalUSD { get; set; }         //
+        public float purchaseValue { get; set; }
+    //    public float totalPrice { get; set; }       //
+     //   public float unitPriceUSD { get; set; }
+     //   public float totalUSD { get; set; }         //
         public string paymentTerms { get; set; }
         public string purchaseOrderNo { get; set; }
         public string contractNo { get; set; }
