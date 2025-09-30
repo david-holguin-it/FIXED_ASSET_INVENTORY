@@ -45,6 +45,7 @@ namespace FIXED_ASSET_INVENTORY.Controllers
                     accumulatedDepreciation = reader["accumulatedDepreciation"] == DBNull.Value ? "" : reader["accumulatedDepreciation"].ToString(),
                     netBookValue            = reader["netBookValue"]            == DBNull.Value ? "" : reader["netBookValue"].ToString(),
                     purchaseOrderNo         = reader["purchaseOrderNo"]         == DBNull.Value ? "" : reader["purchaseOrderNo"].ToString(),
+                    purchaseDate            = reader["purchaseDate"]            == DBNull.Value ? "" : reader["purchaseDate"].ToString(),
                     department              = reader["department"]              == DBNull.Value ? "" : reader["department"].ToString(),
                     fixedAssetNumber        = reader["fixedAssetNumber"]        == DBNull.Value ? "" : reader["fixedAssetNumber"].ToString(),
                     serialNumber            = reader["serialNumber"]            == DBNull.Value ? "" : reader["serialNumber"].ToString(),
