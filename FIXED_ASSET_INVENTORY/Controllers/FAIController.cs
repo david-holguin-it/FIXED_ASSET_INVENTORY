@@ -227,7 +227,7 @@ namespace FIXED_ASSET_INVENTORY.Controllers
                     cnt++;
                     Debug.WriteLine(cnt);
                 }
-                tran.Commit();
+                tran.Commit(); 
             }
             if (lstErrors.Count > 0)
             {

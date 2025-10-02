@@ -4,8 +4,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using System.Data;
 using System.Diagnostics;
+using System.Net.Http;
 using System.Numerics;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace FIXED_ASSET_INVENTORY.Controllers
 {
@@ -13,10 +15,12 @@ namespace FIXED_ASSET_INVENTORY.Controllers
     public class ReportController : Controller
     {
         private readonly string _connStr;
-        public ReportController(IConfiguration configuration)
+        private readonly IHttpClientFactory _httpClientFactory;
+        public ReportController(IConfiguration configuration, IHttpClientFactory httpClientFactory)
         {
             if(configuration.GetConnectionString("PSGDbConnStr") != null)
                 _connStr = configuration.GetConnectionString("PSGDbConnStr"); // Connection string from appsettings.json
+            _httpClientFactory = httpClientFactory;
         }
 
         public IActionResult Index()
@@ -207,6 +211,38 @@ namespace FIXED_ASSET_INVENTORY.Controllers
             return File(ms.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "FixedAssetReport.xlsx");
         }
 
+        [HttpGet("search")]
+        public async Task<IActionResult> Search([FromQuery] string q)
+        {
+            var extracted = "";
+            if (string.IsNullOrEmpty(q)) 
+                return new JsonResult(new { data = "Query parameter 'q' is required.", found = !string.IsNullOrEmpty(extracted) });
 
+            var client = _httpClientFactory.CreateClient();
+            client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0"); // Evitar bloqueos por Google
+
+            var googleUrl = $"https://www.google.com/search?tbm=isch&udm=2&q={Uri.EscapeDataString(q)}";  // https://www.google.com/search?udm=2&q=hola
+
+            var response = await client.GetAsync(googleUrl);
+            if (!response.IsSuccessStatusCode) 
+                return new JsonResult(new { data = "Error al consultar Google "+ response.StatusCode, found = !string.IsNullOrEmpty(extracted) });
+
+            var html = await response.Content.ReadAsStringAsync(); 
+            var match = Regex.Match(html, "<img[^>]+src=[\"'](data:image/[^\"']+)[\"'][^>]*>", RegexOptions.IgnoreCase);
+            if (match.Success)
+            {
+                extracted = match.Groups[1].Value;
+            }
+            else
+            {
+                var match2 = Regex.Match(html, "src=[\"'](https://encrypted-tbn0\\.gstatic\\.com[^\"']+)[\"']", RegexOptions.IgnoreCase);
+                if (match2.Success)
+                {
+                    extracted = match2.Groups[1].Value;
+                }
+            }
+                // Retorna el HTML al frontend
+                return new  JsonResult(new { data= extracted , found = !string.IsNullOrEmpty(extracted)    } );
+        }
     }
 }

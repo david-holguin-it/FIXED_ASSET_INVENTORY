@@ -20,6 +20,7 @@
     <div class="d-grid gap-2">
         <button class="btn btn-success" id="btnGetReport" value="Download">Download xlsx</button>
     </div>
+    <div id="images"></div>
     <table id="rTable">
         <thead id="rThead">
             <tr> 
@@ -54,6 +55,22 @@
 
 <script type="text/javascript">
     $(document).ready(function(e){
+
+    $("#rTable").on("mouseenter","tr",function(e){ 
+    var frstTd = $(this).find('td').eq(0).text();
+    var terceraTd = $(this).find('td').eq(3).text();
+    if(terceraTd=="") return;
+    if(frstTd.includes("img")) return;
+     fetch('/search?q='+encodeURIComponent(terceraTd))  // Ruta de la página a cargar
+            .then(response => response.json())
+            .then(obj => {  
+                if(obj.found)
+                    $(this).find('td').eq(0).html("<div style='max-height:200px;'><img src='"+obj.data+"'></img></div>");
+            })
+            .catch(err => console.error('Error al cargar la página:', err));
+    }) ;
+
+
         $("#rTable").DataTable({
             ajax: {
                 url: '/Report/getReportData', // tu acción en el controlador
@@ -111,5 +128,8 @@
                 alert('Error al descargar el archivo');
             }
         });
+
+
     });
+     
 </script>
