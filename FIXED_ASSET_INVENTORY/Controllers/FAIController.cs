@@ -48,8 +48,7 @@ namespace FIXED_ASSET_INVENTORY.Controllers
             "materialNumber",
             "productName",
             "description", 
-            "purchaseValue", 
-            "purchaseValueUSD", 
+            "purchaseValue",  
             "paymentTerms",
             "purchaseOrderNo",
             "contractNo",
@@ -62,6 +61,7 @@ namespace FIXED_ASSET_INVENTORY.Controllers
             "serialNumber",
             "location",
             "PIC",
+            "glAccount",
             "createdBy"
         };
         public FAIController(IConfiguration configuration)
@@ -128,28 +128,26 @@ namespace FIXED_ASSET_INVENTORY.Controllers
 
                     string insertQuery = string.Format("INSERT INTO [FIXED_ASSET_INVENTORY].[dbo].[FIXED_ASSETS_INV] "
                        + "         ( {0} )"
-                       + " VALUES  ( {1} )", string.Join(",", lstCols), "@" + string.Join(",@", lstCols)); 
-                /* 
-                    category, netBookValue, usefulLife, capitalizationDate, accumulatedDepreciation
-                */
-                    SqlCommand cmd = new SqlCommand(insertQuery, c, tran);     
-      
+                       + " VALUES  ( {1} )", string.Join(",", lstCols.Where(s => !string.IsNullOrEmpty(s))), "@" + string.Join(",@", lstCols.Where(s => !string.IsNullOrEmpty(s))) ); 
+           
+                    SqlCommand cmd = new SqlCommand(insertQuery, c, tran);
+
 
                     try
                     {
-                      
-                        var cellValue1  = cells[0].ToString(); // row.Cell( 1).GetValue<string>(); // no
 
-                        var cellValue2  = cells[1].ToString(); // row.Cell( 2).GetValue<string>(); // manufacturer name
-                        var cellValue3  = cells[2].ToString(); // row.Cell( 3).GetValue<string>(); // third party manuf name
-                        var cellValue4  = cells[3].ToString(); // row.Cell( 4).GetValue<string>(); // material number
-                        var cellValue5  = cells[4].ToString(); // row.Cell( 5).GetValue<string>(); // product name
-                        var cellValue6  = cells[5].ToString(); // row.Cell( 6).GetValue<string>(); // description
-                         
-                        var cellValue8  = Convert.ToDecimal(cells[7].ToString()); // row.Cell( 8).GetValue<Decimal>(); // purchaseValue
-                      //  var cellValue9  = Convert.ToDecimal(cells[8].ToString()); // row.Cell( 9).GetValue<Decimal>(); // totalPrice
-                        var cellValue10 = Convert.ToDecimal(cells[9].ToString()); // row.Cell(10).GetValue<Decimal>(); // purchaseValueUSD
-                     //   var cellValue11 = Convert.ToDecimal(cells[10].ToString()); // row.Cell(11).GetValue<Decimal>(); // totalUSD
+                        var cellValue1 = cells[0].ToString(); // row.Cell( 1).GetValue<string>(); // no
+
+                        var cellValue2 = cells[1].ToString(); // row.Cell( 2).GetValue<string>(); // manufacturer name
+                        var cellValue3 = cells[2].ToString(); // row.Cell( 3).GetValue<string>(); // third party manuf name
+                        var cellValue4 = cells[3].ToString(); // row.Cell( 4).GetValue<string>(); // material number
+                        var cellValue5 = cells[4].ToString(); // row.Cell( 5).GetValue<string>(); // product name
+                        var cellValue6 = cells[5].ToString(); // row.Cell( 6).GetValue<string>(); // description
+
+                        var cellValue8 = Convert.ToDecimal(cells[7].ToString()); // row.Cell( 8).GetValue<Decimal>(); // purchaseValue
+                                                                                 //  var cellValue9  = Convert.ToDecimal(cells[8].ToString()); // row.Cell( 9).GetValue<Decimal>(); // totalPrice
+                        var cellValue10 = Convert.ToDecimal(cells[9].ToString()); // row.Cell(10).GetValue<Decimal>(); // totalPriceUSD
+                                                                                  //   var cellValue11 = Convert.ToDecimal(cells[10].ToString()); // row.Cell(11).GetValue<Decimal>(); // totalUSD
 
                         var cellValue12 = cells[11].ToString(); //row.Cell(12).GetValue<string>(); // paymentTerms
                         var cellValue13 = cells[12].ToString(); //row.Cell(13).GetValue<string>(); // purchaseOrderNo
@@ -167,13 +165,22 @@ namespace FIXED_ASSET_INVENTORY.Controllers
                         var cellValue23 = cells[22].ToString(); //row.Cell(23).GetValue<string>(); // PIC
                         // var cellValue24 = cells[23].ToString(); //row.Cell(24).GetValue<string>(); // NOTE
 
-                        /*
-                            var cellValue25 = cells[24].ToString(); // category
-                            var cellValue26 = cells[25].ToString(); // netBookValue
-                            var cellValue27 = cells[26].ToString(); // usefulLife
-                            var cellValue28 = cells[27].ToString(); // capitalizationDate
-                            var cellValue29 = cells[28].ToString(); // accumulatedDepreciation
-                        */
+                        var glAccount = "";
+                        if (cellValue20.Contains("15003"))
+                        {
+                            glAccount = "15003";
+                        }
+                        else if (glAccount.Contains("15005"))
+                        {
+                            glAccount = "15005";
+                        }
+                            /*
+                                var cellValue25 = cells[24].ToString(); // category
+                                var cellValue26 = cells[25].ToString(); // netBookValue
+                                var cellValue27 = cells[26].ToString(); // usefulLife
+                                var cellValue28 = cells[27].ToString(); // capitalizationDate
+                                var cellValue29 = cells[28].ToString(); // accumulatedDepreciation
+                            */
 
                         cmd.Parameters.AddWithValue("@manufacturerName", cellValue2);
                         cmd.Parameters.AddWithValue("@partyManufacturerName", cellValue3);  // TBD se elimina?
@@ -183,7 +190,7 @@ namespace FIXED_ASSET_INVENTORY.Controllers
                          
                         cmd.Parameters.AddWithValue("@purchaseValue", cellValue8);
                     //    cmd.Parameters.AddWithValue("@totalPrice", cellValue9);
-                        cmd.Parameters.AddWithValue("@purchaseValueUSD", cellValue10);
+                    //    cmd.Parameters.AddWithValue("@totalPriceUSD", cellValue10);
                        // cmd.Parameters.AddWithValue("@totalUSD", cellValue11);
 
                         cmd.Parameters.AddWithValue("@paymentTerms", cellValue12);
@@ -201,6 +208,7 @@ namespace FIXED_ASSET_INVENTORY.Controllers
                         cmd.Parameters.AddWithValue("@location", cellValue22);
                         cmd.Parameters.AddWithValue("@PIC", cellValue23);
                          
+                        cmd.Parameters.AddWithValue("@glAccount", glAccount);
                         cmd.Parameters.AddWithValue("@createdBy", userName);
                     //    cmd.Parameters.AddWithValue("@NOTE", cellValue24);
                     /*
@@ -280,7 +288,7 @@ namespace FIXED_ASSET_INVENTORY.Controllers
 
                     string insertQuery = string.Format("INSERT INTO [FIXED_ASSET_INVENTORY].[dbo].[FIXED_ASSETS_INV] "
                        + "         ( {0} )"
-                       + " VALUES  ( {1} )", string.Join(",", lstCols), "@"+string.Join(",@", lstCols));
+                       + " VALUES  ( {1} )", string.Join(",", lstCols.Where(s => !string.IsNullOrEmpty(s))), "@" +string.Join(",@", lstCols.Where(s => !string.IsNullOrEmpty(s))) );
 
                     SqlCommand cmd = new SqlCommand(insertQuery, con, tran);
                     //    cmd.Parameters.AddWithValue("@id", item.id); 
@@ -292,7 +300,7 @@ namespace FIXED_ASSET_INVENTORY.Controllers
                      
                     cmd.Parameters.AddWithValue("@purchaseValue", item.purchaseValue);
             //        cmd.Parameters.AddWithValue("@totalPrice", item.totalPrice);
-            //        cmd.Parameters.AddWithValue("@purchaseValueUSD", item.purchaseValueUSD);
+            //        cmd.Parameters.AddWithValue("@totalPriceUSD", item.totalPriceUSD);
              //       cmd.Parameters.AddWithValue("@totalUSD", item.totalUSD);
 
                     cmd.Parameters.AddWithValue("@paymentTerms", item.paymentTerms);
@@ -371,7 +379,7 @@ namespace FIXED_ASSET_INVENTORY.Controllers
                     cmd.Parameters.AddWithValue("@description", string.IsNullOrEmpty(item.description) ? "" : item.description);
 
                     cmd.Parameters.AddWithValue("@purchaseValue", item.purchaseValue);
-              //      cmd.Parameters.AddWithValue("@purchaseValueUSD", item.purchaseValueUSD);
+              //      cmd.Parameters.AddWithValue("@totalPriceUSD", item.totalPriceUSD);
 
                     cmd.Parameters.AddWithValue("@paymentTerms", string.IsNullOrEmpty(item.paymentTerms) ? "" : item.paymentTerms);
                     cmd.Parameters.AddWithValue("@purchaseOrderNo", string.IsNullOrEmpty(item.purchaseOrderNo) ? "" : item.purchaseOrderNo);
