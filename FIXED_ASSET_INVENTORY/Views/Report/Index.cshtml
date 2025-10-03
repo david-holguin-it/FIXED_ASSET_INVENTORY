@@ -56,18 +56,19 @@
 <script type="text/javascript">
     $(document).ready(function(e){
 
-    $("#rTable").on("mouseenter","tr",function(e){ 
-    var frstTd = $(this).find('td').eq(0).text();
-    var terceraTd = $(this).find('td').eq(3).text();
-    if(terceraTd=="") return;
-    if(frstTd.includes("img")) return;
-     fetch('/search?q='+encodeURIComponent(terceraTd))  // Ruta de la página a cargar
-            .then(response => response.json())
-            .then(obj => {  
-                if(obj.found)
-                    $(this).find('td').eq(0).html("<div style='max-height:200px;'><img src='"+obj.data+"'></img></div>");
-            })
-            .catch(err => console.error('Error al cargar la página:', err));
+    // EXPERIMENTAL functionality, load the firs image from google images search result
+    $("#rTable").on("mouseenter","tr",function(e){
+        var frstTd = $(this).find('td').eq(0).text();
+        var terceraTd = $(this).find('td').eq(3).text();
+        if(terceraTd=="") return;
+        if(frstTd.includes("img")) return;
+        fetch('/search?q='+encodeURIComponent(terceraTd))  // Ruta de la página a cargar
+        .then(response => response.json())
+        .then(obj => {  
+            if(obj.found)
+                $(this).find('td').eq(0).html("<div style='max-height:200px;'><img src='"+obj.data+"'></img></div>");
+        })
+        .catch(err => console.error('Error al cargar la página:', err));
     }) ;
 
 
@@ -106,6 +107,7 @@
             }
         });
     });
+
     $(document).on("click","#btnGetReport",function(){
         // download excel page
         $.ajax({
@@ -128,7 +130,6 @@
                 alert('Error al descargar el archivo');
             }
         });
-
 
     });
      
