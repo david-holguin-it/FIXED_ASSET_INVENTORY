@@ -160,19 +160,22 @@ namespace FIXED_ASSET_INVENTORY.Controllers
                         var cellValue19 = cells[18].ToString(); //row.Cell(19).GetValue<string>(); // manager
 
                         var cellValue20 = cells[19].ToString(); //row.Cell(20).GetValue<string>(); // fixedAssetNumber
-                        var cellValue21 = cells[20].ToString(); //row.Cell(21).GetValue<string>(); // serialNumber
-                        var cellValue22 = cells[21].ToString(); //row.Cell(22).GetValue<string>(); // location
-                        var cellValue23 = cells[22].ToString(); //row.Cell(23).GetValue<string>(); // PIC
+                     //   var cellValue21 = cells[20].ToString(); //row.Cell(21).GetValue<string>(); // -----------------------------------labelPrinted
+                        var cellValue22 = cells[21].ToString(); //row.Cell(21).GetValue<string>(); // serialNumber
+                        var cellValue23 = cells[22].ToString(); //row.Cell(22).GetValue<string>(); // location
+                        var cellValue24 = cells[23].ToString(); //row.Cell(23).GetValue<string>(); // PIC
                         // var cellValue24 = cells[23].ToString(); //row.Cell(24).GetValue<string>(); // NOTE
 
                         var glAccount = "";
-                        if (cellValue20.Contains("15003"))
+                        var glEquipment="15003"; // TO DO revisar si no los puse al reves
+                        var glComputers="15005";
+                        if (cellValue20.Contains(glEquipment))
                         {
-                            glAccount = "15003";
+                            glAccount = glEquipment;
                         }
-                        else if (glAccount.Contains("15005"))
+                        else if (cellValue20.Contains(glComputers))
                         {
-                            glAccount = "15005";
+                            glAccount = glComputers;
                         }
                             /*
                                 var cellValue25 = cells[24].ToString(); // category
@@ -204,9 +207,9 @@ namespace FIXED_ASSET_INVENTORY.Controllers
                         cmd.Parameters.AddWithValue("@manager", cellValue19);
 
                         cmd.Parameters.AddWithValue("@fixedAssetNumber", cellValue20);
-                        cmd.Parameters.AddWithValue("@serialNumber", cellValue21);
-                        cmd.Parameters.AddWithValue("@location", cellValue22);
-                        cmd.Parameters.AddWithValue("@PIC", cellValue23);
+                        cmd.Parameters.AddWithValue("@serialNumber", cellValue22.Length>50? cellValue22.Substring(0, 50): cellValue22);
+                        cmd.Parameters.AddWithValue("@location", cellValue23);
+                        cmd.Parameters.AddWithValue("@PIC", cellValue24);
                          
                         cmd.Parameters.AddWithValue("@glAccount", glAccount);
                         cmd.Parameters.AddWithValue("@createdBy", userName);
