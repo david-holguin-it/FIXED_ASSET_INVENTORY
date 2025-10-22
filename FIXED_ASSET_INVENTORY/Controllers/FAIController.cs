@@ -61,6 +61,7 @@ namespace FIXED_ASSET_INVENTORY.Controllers
             "fixedAssetNumber",
             "serialNumber",
             "location",
+            "usefulLife",
             "PIC",
             "glAccount",
             "createdBy"
@@ -170,13 +171,20 @@ namespace FIXED_ASSET_INVENTORY.Controllers
                         var glAccount = "";
                         var glEquipment="15003"; // TO DO revisar si no los puse al reves
                         var glComputers="15005";
+                        var usefulLife = 0;
                         if (cellValue20.Contains(glEquipment))
                         {
                             glAccount = glEquipment;
+                            usefulLife= 120; // meses
                         }
                         else if (cellValue20.Contains(glComputers))
                         {
                             glAccount = glComputers;
+                            usefulLife = 4; // meses
+                        }
+                        else
+                        {
+                            usefulLife = 4; // meses
                         }
                             /*
                                 var cellValue25 = cells[24].ToString(); // category
@@ -186,7 +194,7 @@ namespace FIXED_ASSET_INVENTORY.Controllers
                                 var cellValue29 = cells[28].ToString(); // accumulatedDepreciation
                             */
 
-                        cmd.Parameters.AddWithValue("@manufacturerName", cellValue2);
+                            cmd.Parameters.AddWithValue("@manufacturerName", cellValue2);
                         cmd.Parameters.AddWithValue("@partyManufacturerName", cellValue3);  // TBD se elimina?
                         cmd.Parameters.AddWithValue("@materialNumber", cellValue4);
                         cmd.Parameters.AddWithValue("@productName", cellValue5);
@@ -214,14 +222,15 @@ namespace FIXED_ASSET_INVENTORY.Controllers
                          
                         cmd.Parameters.AddWithValue("@glAccount", glAccount);
                         cmd.Parameters.AddWithValue("@createdBy", userName);
-                    //    cmd.Parameters.AddWithValue("@NOTE", cellValue24);
-                    /*
-                        cmd.Parameters.AddWithValue("@category", cellValue25);
-                        cmd.Parameters.AddWithValue("@netBookValue", cellValue26);
-                        cmd.Parameters.AddWithValue("@usefulLife", cellValue27);
-                        cmd.Parameters.AddWithValue("@capitalizationDate", cellValue28);
-                        cmd.Parameters.AddWithValue("@accumulatedDepreciation", cellValue29);
-                    */
+                        cmd.Parameters.AddWithValue("@usefulLife", usefulLife);
+                        //    cmd.Parameters.AddWithValue("@NOTE", cellValue24);
+                        /*
+                            cmd.Parameters.AddWithValue("@category", cellValue25);
+                            cmd.Parameters.AddWithValue("@netBookValue", cellValue26);
+                            cmd.Parameters.AddWithValue("@usefulLife", cellValue27);
+                            cmd.Parameters.AddWithValue("@capitalizationDate", cellValue28);
+                            cmd.Parameters.AddWithValue("@accumulatedDepreciation", cellValue29);
+                        */
                         cmd.ExecuteNonQuery();
                     }
                     catch (Exception ex)
