@@ -34,8 +34,8 @@ namespace FIXED_ASSET_INVENTORY.Controllers
     ///     -Cargar campos faltantes del formato
     ///     -Agregar  campos faltantes a
     ///     -Cambiar  locacion y llevar el registro de quien lo registro, cuando y a donde 
-    ///     -Restricted access by AD
-    ///     -Access restricted by permitted users in [PSG Server].[BASE].PD_ACCESS table
+    ///     -Restricted access by AD 
+    ///     -Access restricted by permitted users in [PSG Server].[BASE].PD_ACCESS table 
     /// CONCEPTS
     /// Capitalization Day es la fecha en que un activo fijo se registra en los libros contables de la empresa, esto es a partir de que ya se puede usar y  a partir de esta fecha se empieza a depreciar el activo
     /// </summary>
