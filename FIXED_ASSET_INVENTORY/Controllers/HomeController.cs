@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Configuration;
 using System.Diagnostics;
 using System.DirectoryServices.AccountManagement;
 using System.Security.Claims;
@@ -18,10 +19,15 @@ namespace FIXED_ASSET_INVENTORY.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly IHttpClientFactory _httpClientFactory;
+        string _connStr = "";
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger,IConfiguration configuration, IHttpClientFactory httpClientFactory)
         {
             _logger = logger;
+            _httpClientFactory = httpClientFactory;
+            if (configuration.GetConnectionString("PSGDbConnStr") != null)
+                _connStr = configuration.GetConnectionString("PSGDbConnStr"); // Connection string from appsettings.json
         }
 
         [Authorize]
@@ -59,7 +65,12 @@ namespace FIXED_ASSET_INVENTORY.Controllers
             {
                 if (!context.ValidateCredentials(model.Username, model.Password))
                 {
-                    ModelState.AddModelError("", "Usuario o contraseña inválidos");
+                    ModelState.AddModelError("", "Usuar or password are invalid");
+                    return View(model);
+                } 
+                if (Users.userExists(model.Username, _connStr) != "OK")
+                {
+                    ModelState.AddModelError("", "You don't have access to this app.");
                     return View(model);
                 }
             }
